@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+
 import { LogOut, Plus, Search, X, ChevronDown, Pill } from 'lucide-react'
 
 type FoodResult = {
@@ -143,16 +144,16 @@ export default function LogClient({
     if (!selected) return
     const mult = parseFloat(servings) || 1
     const entry = {
-      user_id: profile.id,
       log_date: today,
       meal_name: selected.description,
       calories: Math.round(selected.calories * mult),
       protein: Math.round(selected.protein * mult * 10) / 10,
       carbs: Math.round(selected.carbs * mult * 10) / 10,
       fat: Math.round(selected.fat * mult * 10) / 10,
-      entry_method: 'search' as const,
+      entry_method: 'search',
     }
-    const { data } = await supabase.from('nutrition_logs').insert(entry).select().single()
+    const res = await fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) })
+    const { data } = await res.json()
     if (data) setLogs(prev => [...prev, data])
     resetModal()
   }
@@ -160,36 +161,33 @@ export default function LogClient({
   async function addManual() {
     if (!manual.meal_name || !manual.calories) return
     const entry = {
-      user_id: profile.id,
       log_date: today,
       meal_name: manual.meal_name,
       calories: parseInt(manual.calories) || 0,
       protein: parseFloat(manual.protein) || 0,
       carbs: parseFloat(manual.carbs) || 0,
       fat: parseFloat(manual.fat) || 0,
-      entry_method: 'manual' as const,
+      entry_method: 'manual',
     }
-    const { data } = await supabase.from('nutrition_logs').insert(entry).select().single()
+    const res = await fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) })
+    const { data } = await res.json()
     if (data) setLogs(prev => [...prev, data])
     resetModal()
   }
 
   async function deleteLog(id: string) {
-    await supabase.from('nutrition_logs').delete().eq('id', id)
+    await fetch('/api/log', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
     setLogs(prev => prev.filter(l => l.id !== id))
   }
 
   async function toggleSupp(name: string) {
     const existing = suppLogs.find(s => s.supplement_name === name)
     if (existing) {
-      await supabase.from('supplement_logs').delete().eq('id', existing.id)
+      await fetch('/api/supp', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: existing.id }) })
       setSuppLogs(prev => prev.filter(s => s.id !== existing.id))
     } else {
-      const { data } = await supabase
-        .from('supplement_logs')
-        .insert({ user_id: profile.id, log_date: today, supplement_name: name, taken: true })
-        .select()
-        .single()
+      const res = await fetch('/api/supp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ log_date: today, supplement_name: name }) })
+      const { data } = await res.json()
       if (data) setSuppLogs(prev => [...prev, data])
     }
   }
