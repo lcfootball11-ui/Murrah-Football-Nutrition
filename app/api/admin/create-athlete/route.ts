@@ -1,26 +1,22 @@
-import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
-  // Verify the caller is a coach
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { full_name, email, password, coach_secret } = await request.json()
+
+  if (coach_secret !== process.env.COACH_SECRET) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  if (!full_name || !email || !password) {
+    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+  }
 
   const adminClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
-
-  const { data: profile } = await adminClient.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'coach') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
-  const { full_name, email, password } = await request.json()
-  if (!full_name || !email || !password) {
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
-  }
 
   const { data: newUser, error } = await adminClient.auth.admin.createUser({
     email,
@@ -31,7 +27,6 @@ export async function POST(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  // Insert profile row
   await adminClient.from('profiles').insert({
     id: newUser.user.id,
     full_name,

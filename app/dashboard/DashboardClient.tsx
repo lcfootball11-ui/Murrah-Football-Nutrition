@@ -59,7 +59,7 @@ export default function DashboardClient({
     const res = await fetch('/api/admin/create-athlete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newAthlete),
+      body: JSON.stringify({ ...newAthlete, coach_secret: 'MurrahFootballCover3$ky!Coach' }),
     })
     setSaving(false)
     if (res.ok) {
