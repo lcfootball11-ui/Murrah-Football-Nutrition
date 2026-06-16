@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LogOut, Users, ChevronDown, ChevronUp, Plus, X } from 'lucide-react'
+import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target } from 'lucide-react'
 
 type Athlete = { id: string; full_name: string }
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
@@ -13,14 +13,6 @@ type Target = { user_id: string; calories: number; protein: number; carbs: numbe
 function pct(val: number, target: number) {
   if (!target) return 0
   return Math.min(Math.round((val / target) * 100), 100)
-}
-
-function Bar({ value, target, color }: { value: number; target: number; color: string }) {
-  return (
-    <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
-      <div className={`h-full rounded-full ${color}`} style={{ width: `${pct(value, target)}%` }} />
-    </div>
-  )
 }
 
 export default function DashboardClient({
@@ -89,39 +81,69 @@ export default function DashboardClient({
       }),
     })
     setSaving(false)
-    if (res.ok) {
-      setShowSetTargets(null)
-      router.refresh()
-    } else {
-      const err = await res.json()
-      alert(err.error ?? 'Failed to save targets')
-    }
+    if (res.ok) { setShowSetTargets(null); router.refresh() }
+    else { const err = await res.json(); alert(err.error ?? 'Failed to save targets') }
   }
 
+  const totalLogged = athletes.filter(a => logs.some(l => l.user_id === a.id)).length
+  const compliancePct = athletes.length > 0 ? Math.round((totalLogged / athletes.length) * 100) : 0
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white pb-10">
+    <div className="min-h-screen mustang-gradient text-white pb-10">
+
       {/* Header */}
-      <div className="bg-gray-900 px-4 py-4 flex items-center justify-between border-b border-gray-800">
-        <div>
-          <p className="text-xs text-gray-400">Coach</p>
-          <h1 className="font-bold text-lg">{coachName}</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-500">{today}</span>
-          <button onClick={signOut} className="text-gray-400 hover:text-white"><LogOut size={20} /></button>
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 hero-gradient pointer-events-none" />
+        <div className="relative px-4 pt-5 pb-5">
+          <div className="flex items-start justify-between mb-5">
+            <div>
+              <p className="text-xs font-bold text-blue-400 uppercase tracking-widest">Murrah Mustangs 🐴</p>
+              <h1 className="text-2xl font-black text-white mt-0.5">Coach Dashboard</h1>
+              <p className="text-slate-400 text-xs mt-0.5">{today}</p>
+            </div>
+            <button onClick={signOut} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
+              <LogOut size={18} />
+            </button>
+          </div>
+
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Athletes', value: athletes.length, emoji: '🏈' },
+              { label: 'Logged Today', value: totalLogged, emoji: '✅' },
+              { label: 'Compliance', value: `${compliancePct}%`, emoji: compliancePct >= 70 ? '🔥' : '💪' },
+            ].map(({ label, value, emoji }) => (
+              <div key={label} className="glass-blue rounded-2xl p-3 text-center">
+                <p className="text-xl mb-0.5">{emoji}</p>
+                <p className="text-xl font-black text-white">{value}</p>
+                <p className="text-xs text-slate-400 font-medium">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="px-4 py-5 max-w-2xl mx-auto space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold flex items-center gap-2"><Users size={16} /> Athletes ({athletes.length})</h2>
+      <div className="px-4 py-4 max-w-2xl mx-auto space-y-3">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <Users size={15} className="text-slate-400" />
+            <p className="text-sm font-bold text-slate-300 uppercase tracking-wide">Roster</p>
+          </div>
           <button
             onClick={() => setShowAddAthlete(true)}
-            className="flex items-center gap-1 text-sm bg-green-500 hover:bg-green-400 text-white px-3 py-1.5 rounded-lg"
+            className="btn-blue flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-2 rounded-xl"
           >
-            <Plus size={14} /> Add Athlete
+            <Plus size={13} /> Add Athlete
           </button>
         </div>
+
+        {athletes.length === 0 && (
+          <div className="glass rounded-2xl py-12 text-center">
+            <p className="text-4xl mb-3">🏈</p>
+            <p className="text-slate-400 font-medium">No athletes yet</p>
+            <p className="text-slate-600 text-sm mt-1">Add your first Mustang above</p>
+          </div>
+        )}
 
         {athletes.map(athlete => {
           const athleteLogs = logs.filter(l => l.user_id === athlete.id)
@@ -133,48 +155,65 @@ export default function DashboardClient({
           const suppsTaken = suppLogs.filter(s => s.user_id === athlete.id && s.taken).map(s => s.supplement_name)
           const suppsTarget = target?.supplements ?? []
           const isExpanded = expanded === athlete.id
-          const calPct = pct(totals.cal, target?.calories ?? 2500)
+          const calTarget = target?.calories ?? 2500
+          const calPct = pct(totals.cal, calTarget)
+          const statusColor = calPct >= 80 ? '#22c55e' : calPct >= 40 ? '#3b82f6' : '#ef4444'
+          const statusEmoji = calPct >= 80 ? '🔥' : calPct >= 40 ? '💪' : '😤'
 
           return (
-            <div key={athlete.id} className="bg-gray-900 rounded-2xl overflow-hidden">
+            <div key={athlete.id} className="card overflow-hidden">
               <button
-                className="w-full px-4 py-3 flex items-center justify-between"
+                className="w-full px-4 py-3.5 flex items-center gap-3"
                 onClick={() => setExpanded(isExpanded ? null : athlete.id)}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${calPct >= 80 ? 'bg-green-400' : calPct >= 40 ? 'bg-yellow-400' : 'bg-red-400'}`} />
-                  <span className="font-medium truncate">{athlete.full_name}</span>
+                <div className="w-10 h-10 glass-blue rounded-xl flex items-center justify-center font-black text-blue-300 text-sm shrink-0">
+                  {athlete.full_name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()}
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs text-gray-400">{totals.cal} / {target?.calories ?? '?'} cal</span>
-                  {isExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="font-bold text-sm text-white truncate">{athlete.full_name}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${calPct}%`, background: statusColor, boxShadow: `0 0 6px ${statusColor}88` }} />
+                    </div>
+                    <span className="text-xs font-bold shrink-0" style={{ color: statusColor }}>{calPct}%</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-lg">{statusEmoji}</span>
+                  {isExpanded ? <ChevronUp size={15} className="text-slate-500" /> : <ChevronDown size={15} className="text-slate-500" />}
                 </div>
               </button>
 
               {isExpanded && (
-                <div className="px-4 pb-4 space-y-3 border-t border-gray-800 pt-3">
-                  <div className="grid grid-cols-3 gap-3">
+                <div className="px-4 pb-4 space-y-3 border-t border-white/5 pt-3 animate-slide-up">
+                  <div className="grid grid-cols-2 gap-2">
                     {[
-                      { label: 'Protein', val: Math.round(totals.pro), target: target?.protein ?? 150, color: 'bg-blue-500' },
-                      { label: 'Carbs', val: Math.round(totals.carb), target: target?.carbs ?? 300, color: 'bg-yellow-500' },
-                      { label: 'Fat', val: Math.round(totals.fat), target: target?.fat ?? 80, color: 'bg-red-500' },
-                    ].map(({ label, val, target: t, color }) => (
-                      <div key={label}>
-                        <div className="flex justify-between text-xs text-gray-400 mb-1">
-                          <span>{label}</span>
-                          <span>{val}/{t}g</span>
+                      { label: 'Calories', val: totals.cal, target: calTarget, unit: 'cal', color: '#3b82f6' },
+                      { label: 'Protein', val: Math.round(totals.pro), target: target?.protein ?? 150, unit: 'g', color: '#60a5fa' },
+                      { label: 'Carbs', val: Math.round(totals.carb), target: target?.carbs ?? 300, unit: 'g', color: '#94a3b8' },
+                      { label: 'Fat', val: Math.round(totals.fat), target: target?.fat ?? 80, unit: 'g', color: '#cbd5e1' },
+                    ].map(({ label, val, target: t, unit, color }) => (
+                      <div key={label} className="glass rounded-xl p-3">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-xs font-bold text-slate-400">{label}</span>
+                          <span className="text-xs font-bold" style={{ color }}>{val}/{t}{unit}</span>
                         </div>
-                        <Bar value={val} target={t} color={color} />
+                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct(val, t)}%`, background: color }} />
+                        </div>
                       </div>
                     ))}
                   </div>
 
                   {suppsTarget.length > 0 && (
                     <div>
-                      <p className="text-xs text-gray-500 mb-1.5">Supplements</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Supplements</p>
                       <div className="flex flex-wrap gap-1.5">
                         {suppsTarget.map(s => (
-                          <span key={s} className={`text-xs px-2 py-1 rounded-full ${suppsTaken.includes(s) ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-500'}`}>
+                          <span
+                            key={s}
+                            className={`text-xs font-bold px-2.5 py-1 rounded-full ${suppsTaken.includes(s) ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'glass text-slate-500'}`}
+                          >
                             {suppsTaken.includes(s) ? '✓ ' : ''}{s}
                           </span>
                         ))}
@@ -194,28 +233,25 @@ export default function DashboardClient({
                       })
                       setShowSetTargets(athlete.id)
                     }}
-                    className="text-xs text-green-400 hover:text-green-300"
+                    className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
                   >
-                    Set / edit targets →
+                    <Target size={12} /> Set / edit targets →
                   </button>
                 </div>
               )}
             </div>
           )
         })}
-
-        {athletes.length === 0 && (
-          <p className="text-gray-600 text-sm text-center py-10">No athletes yet. Add your first one above.</p>
-        )}
       </div>
 
       {/* Add Athlete Modal */}
       {showAddAthlete && (
-        <div className="fixed inset-0 bg-black/70 z-20 flex items-end" onClick={e => e.target === e.currentTarget && setShowAddAthlete(false)}>
-          <div className="bg-gray-900 rounded-t-3xl w-full p-5 space-y-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end" onClick={e => e.target === e.currentTarget && setShowAddAthlete(false)}>
+          <div className="w-full rounded-t-3xl p-5 space-y-4 animate-slide-up" style={{ background: '#0d1433', border: '1px solid rgba(59,130,246,0.2)', borderBottom: 'none' }}>
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto" />
             <div className="flex justify-between items-center">
-              <h3 className="font-bold text-lg">Add Athlete</h3>
-              <button onClick={() => setShowAddAthlete(false)}><X size={22} className="text-gray-400" /></button>
+              <h3 className="font-black text-xl">Add Athlete 🏈</h3>
+              <button onClick={() => setShowAddAthlete(false)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
             </div>
             {[
               { key: 'full_name', label: 'Full Name', type: 'text', placeholder: 'John Smith' },
@@ -223,22 +259,17 @@ export default function DashboardClient({
               { key: 'password', label: 'Temp Password', type: 'password', placeholder: '••••••••' },
             ].map(({ key, label, type, placeholder }) => (
               <div key={key}>
-                <label className="text-xs text-gray-400">{label}</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</label>
                 <input
-                  type={type}
-                  placeholder={placeholder}
+                  type={type} placeholder={placeholder}
                   value={newAthlete[key as keyof typeof newAthlete]}
                   onChange={e => setNewAthlete(p => ({ ...p, [key]: e.target.value }))}
-                  className="w-full mt-1 bg-gray-800 text-white rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full mt-1.5 glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500/50 placeholder-slate-600"
                 />
               </div>
             ))}
-            <button
-              onClick={addAthlete}
-              disabled={saving}
-              className="w-full py-3 rounded-xl bg-green-500 disabled:opacity-50 text-white font-semibold"
-            >
-              {saving ? 'Creating…' : 'Create Athlete'}
+            <button onClick={addAthlete} disabled={saving} className="w-full py-3.5 rounded-2xl btn-blue disabled:opacity-50 text-white font-bold">
+              {saving ? 'Creating…' : 'Add to Roster ✓'}
             </button>
           </div>
         </div>
@@ -246,11 +277,12 @@ export default function DashboardClient({
 
       {/* Set Targets Modal */}
       {showSetTargets && (
-        <div className="fixed inset-0 bg-black/70 z-20 flex items-end" onClick={e => e.target === e.currentTarget && setShowSetTargets(null)}>
-          <div className="bg-gray-900 rounded-t-3xl w-full p-5 space-y-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end" onClick={e => e.target === e.currentTarget && setShowSetTargets(null)}>
+          <div className="w-full rounded-t-3xl p-5 space-y-4 animate-slide-up" style={{ background: '#0d1433', border: '1px solid rgba(59,130,246,0.2)', borderBottom: 'none' }}>
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto" />
             <div className="flex justify-between items-center">
-              <h3 className="font-bold text-lg">Set Macro Targets</h3>
-              <button onClick={() => setShowSetTargets(null)}><X size={22} className="text-gray-400" /></button>
+              <h3 className="font-black text-xl flex items-center gap-2"><Target size={20} className="text-blue-400" /> Set Targets</h3>
+              <button onClick={() => setShowSetTargets(null)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -260,32 +292,27 @@ export default function DashboardClient({
                 { key: 'fat', label: 'Fat (g)' },
               ].map(({ key, label }) => (
                 <div key={key}>
-                  <label className="text-xs text-gray-400">{label}</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</label>
                   <input
                     type="number"
                     value={targetForm[key as keyof typeof targetForm]}
                     onChange={e => setTargetForm(p => ({ ...p, [key]: e.target.value }))}
-                    className="w-full mt-1 bg-gray-800 text-white rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full mt-1.5 glass border border-white/10 text-white rounded-xl px-3 py-3 outline-none focus:border-blue-500/50 text-center font-bold"
                   />
                 </div>
               ))}
             </div>
             <div>
-              <label className="text-xs text-gray-400">Supplements (comma-separated)</label>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Supplements (comma-separated)</label>
               <input
-                type="text"
-                placeholder="Creatine, Fish Oil, Vitamin D"
+                type="text" placeholder="Creatine, Fish Oil, Vitamin D"
                 value={targetForm.supplements}
                 onChange={e => setTargetForm(p => ({ ...p, supplements: e.target.value }))}
-                className="w-full mt-1 bg-gray-800 text-white rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full mt-1.5 glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500/50 placeholder-slate-600"
               />
             </div>
-            <button
-              onClick={() => saveTargets(showSetTargets)}
-              disabled={saving}
-              className="w-full py-3 rounded-xl bg-green-500 disabled:opacity-50 text-white font-semibold"
-            >
-              {saving ? 'Saving…' : 'Save Targets'}
+            <button onClick={() => saveTargets(showSetTargets)} disabled={saving} className="w-full py-3.5 rounded-2xl btn-blue disabled:opacity-50 text-white font-bold">
+              {saving ? 'Saving…' : 'Save Targets ✓'}
             </button>
           </div>
         </div>
