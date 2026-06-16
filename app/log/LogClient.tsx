@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useTransition, useEffect, useRef } from 'react'
+import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-import { LogOut, Plus, Search, X, ChevronDown, Pill } from 'lucide-react'
+import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar } from 'lucide-react'
 
 type FoodResult = {
   fdcId: number
@@ -100,10 +100,26 @@ export default function LogClient({
 }) {
   const supabase = createClient()
   const router = useRouter()
+  const [tab, setTab] = useState<'today' | 'week' | 'month'>('today')
   const [logs, setLogs] = useState<NutritionLog[]>(initialLogs)
   const [suppLogs, setSuppLogs] = useState<SuppLog[]>(initialSuppLogs)
   const [showAddModal, setShowAddModal] = useState(false)
   const [mode, setMode] = useState<'search' | 'manual'>('search')
+  const [historyLogs, setHistoryLogs] = useState<{ log_date: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+
+  const loadHistory = useCallback(async (range: 'week' | 'month') => {
+    setHistoryLoading(true)
+    const res = await fetch(`/api/history?range=${range}`)
+    const data = await res.json()
+    setHistoryLogs(data.logs ?? [])
+    setHistoryLoading(false)
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'week') loadHistory('week')
+    if (tab === 'month') loadHistory('month')
+  }, [tab, loadHistory])
 
   // Search state
   const [query, setQuery] = useState('')
@@ -221,9 +237,22 @@ export default function LogClient({
         </button>
       </div>
 
+      {/* Tab bar */}
+      <div className="flex bg-gray-900 border-b border-gray-800">
+        {(['today', 'week', 'month'] as const).map(t => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`flex-1 py-3 text-sm font-medium capitalize transition-colors ${tab === t ? 'text-green-400 border-b-2 border-green-400' : 'text-gray-500'}`}
+          >
+            {t === 'today' ? 'Today' : t === 'week' ? 'This Week' : 'This Month'}
+          </button>
+        ))}
+      </div>
+
       <div className="px-4 py-5 space-y-6 max-w-lg mx-auto">
         {/* Macro rings */}
-        <div>
+        {tab === 'today' && <div>
           <h2 className="text-sm text-gray-400 mb-3 font-medium">TODAY'S TOTALS</h2>
           <div className="bg-gray-900 rounded-2xl p-4 grid grid-cols-4 gap-2">
             <MacroRing label="Cal" value={totals.calories} target={targets?.calories ?? 2500} color="#22c55e" unit="" />
@@ -231,10 +260,10 @@ export default function LogClient({
             <MacroRing label="Carbs" value={Math.round(totals.carbs)} target={targets?.carbs ?? 300} color="#f59e0b" />
             <MacroRing label="Fat" value={Math.round(totals.fat)} target={targets?.fat ?? 80} color="#ef4444" />
           </div>
-        </div>
+        </div>}
 
         {/* Supplements */}
-        {supplements.length > 0 && (
+        {tab === 'today' && supplements.length > 0 && (
           <div>
             <h2 className="text-sm text-gray-400 mb-3 font-medium flex items-center gap-1"><Pill size={14} /> SUPPLEMENTS</h2>
             <div className="flex flex-wrap gap-2">
@@ -254,37 +283,93 @@ export default function LogClient({
           </div>
         )}
 
-        {/* Food logs */}
-        <div>
-          <h2 className="text-sm text-gray-400 mb-3 font-medium">FOOD LOG</h2>
-          <div className="space-y-2">
-            {logs.length === 0 && (
-              <p className="text-gray-600 text-sm text-center py-6">No food logged yet today</p>
-            )}
-            {logs.map(log => (
-              <div key={log.id} className="bg-gray-900 rounded-xl px-4 py-3 flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{log.meal_name}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {log.calories} cal · {log.protein}g P · {log.carbs}g C · {log.fat}g F
-                  </p>
+        {/* Food logs - today */}
+        {tab === 'today' && (
+          <div>
+            <h2 className="text-sm text-gray-400 mb-3 font-medium">FOOD LOG</h2>
+            <div className="space-y-2">
+              {logs.length === 0 && (
+                <p className="text-gray-600 text-sm text-center py-6">No food logged yet today</p>
+              )}
+              {logs.map(log => (
+                <div key={log.id} className="bg-gray-900 rounded-xl px-4 py-3 flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{log.meal_name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {log.calories} cal · {log.protein}g P · {log.carbs}g C · {log.fat}g F
+                    </p>
+                  </div>
+                  <button onClick={() => deleteLog(log.id)} className="text-gray-600 hover:text-red-400 ml-3 shrink-0">
+                    <X size={16} />
+                  </button>
                 </div>
-                <button onClick={() => deleteLog(log.id)} className="text-gray-600 hover:text-red-400 ml-3 shrink-0">
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* History view - week/month */}
+        {(tab === 'week' || tab === 'month') && (
+          <div>
+            <h2 className="text-sm text-gray-400 mb-3 font-medium flex items-center gap-1">
+              <Calendar size={14} /> {tab === 'week' ? 'LAST 7 DAYS' : 'LAST 30 DAYS'}
+            </h2>
+            {historyLoading && <p className="text-gray-500 text-sm text-center py-6">Loading…</p>}
+            {!historyLoading && historyLogs.length === 0 && (
+              <p className="text-gray-600 text-sm text-center py-6">No logs in this period</p>
+            )}
+            {!historyLoading && (() => {
+              // Group by date
+              const byDate = historyLogs.reduce<Record<string, typeof historyLogs>>((acc, l) => {
+                acc[l.log_date] = acc[l.log_date] ?? []
+                acc[l.log_date].push(l)
+                return acc
+              }, {})
+
+              return Object.entries(byDate).reverse().map(([date, dayLogs]) => {
+                const total = dayLogs.reduce((a, l) => ({
+                  calories: a.calories + l.calories,
+                  protein: a.protein + l.protein,
+                  carbs: a.carbs + l.carbs,
+                  fat: a.fat + l.fat,
+                }), { calories: 0, protein: 0, carbs: 0, fat: 0 })
+
+                const calTarget = targets?.calories ?? 2500
+                const pct = Math.min(Math.round((total.calories / calTarget) * 100), 100)
+                const label = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+
+                return (
+                  <div key={date} className="bg-gray-900 rounded-xl px-4 py-3 mb-2">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium">{label}</span>
+                      <span className={`text-xs font-semibold ${pct >= 80 ? 'text-green-400' : pct >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
+                        {total.calories} cal ({pct}%)
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden mb-2">
+                      <div
+                        className={`h-full rounded-full ${pct >= 80 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {Math.round(total.protein)}g P · {Math.round(total.carbs)}g C · {Math.round(total.fat)}g F
+                    </p>
+                  </div>
+                )
+              })
+            })()}
+          </div>
+        )}
       </div>
 
-      {/* FAB */}
-      <button
+      {/* FAB - today only */}
+      {tab === 'today' && <button
         onClick={() => setShowAddModal(true)}
         className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-400 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-colors z-10"
       >
         <Plus size={26} />
-      </button>
+      </button>}
 
       {/* Add modal */}
       {showAddModal && (
