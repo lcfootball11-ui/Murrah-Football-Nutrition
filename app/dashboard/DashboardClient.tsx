@@ -75,18 +75,27 @@ export default function DashboardClient({
   async function saveTargets(athleteId: string) {
     setSaving(true)
     const supps = targetForm.supplements.split(',').map(s => s.trim()).filter(Boolean)
-    const payload = {
-      user_id: athleteId,
-      calories: parseInt(targetForm.calories) || 0,
-      protein: parseFloat(targetForm.protein) || 0,
-      carbs: parseFloat(targetForm.carbs) || 0,
-      fat: parseFloat(targetForm.fat) || 0,
-      supplements: supps,
-    }
-    await supabase.from('macro_targets').upsert(payload, { onConflict: 'user_id' })
+    const res = await fetch('/api/targets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        coach_secret: 'MurrahFootballCover3$ky!Coach',
+        user_id: athleteId,
+        calories: parseInt(targetForm.calories) || 0,
+        protein: parseFloat(targetForm.protein) || 0,
+        carbs: parseFloat(targetForm.carbs) || 0,
+        fat: parseFloat(targetForm.fat) || 0,
+        supplements: supps,
+      }),
+    })
     setSaving(false)
-    setShowSetTargets(null)
-    router.refresh()
+    if (res.ok) {
+      setShowSetTargets(null)
+      router.refresh()
+    } else {
+      const err = await res.json()
+      alert(err.error ?? 'Failed to save targets')
+    }
   }
 
   return (
