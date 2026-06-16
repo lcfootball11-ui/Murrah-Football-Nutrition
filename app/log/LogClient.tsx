@@ -101,12 +101,23 @@ export default function LogClient({
   const supabase = createClient()
   const router = useRouter()
   const [tab, setTab] = useState<'today' | 'week' | 'month'>('today')
+  const [activeDate, setActiveDate] = useState(today)
   const [logs, setLogs] = useState<NutritionLog[]>(initialLogs)
   const [suppLogs, setSuppLogs] = useState<SuppLog[]>(initialSuppLogs)
+  const [dateLoading, setDateLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [mode, setMode] = useState<'search' | 'manual'>('search')
   const [historyLogs, setHistoryLogs] = useState<{ log_date: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
+
+  const loadDate = useCallback(async (date: string) => {
+    setDateLoading(true)
+    const res = await fetch(`/api/log-for-date?date=${date}`)
+    const data = await res.json()
+    setLogs(data.logs ?? [])
+    setSuppLogs(data.suppLogs ?? [])
+    setDateLoading(false)
+  }, [])
 
   const loadHistory = useCallback(async (range: 'week' | 'month') => {
     setHistoryLoading(true)
@@ -120,6 +131,25 @@ export default function LogClient({
     if (tab === 'week') loadHistory('week')
     if (tab === 'month') loadHistory('month')
   }, [tab, loadHistory])
+
+  function goToDate(date: string) {
+    setActiveDate(date)
+    setTab('today')
+    if (date === today) {
+      setLogs(initialLogs)
+      setSuppLogs(initialSuppLogs)
+    } else {
+      loadDate(date)
+    }
+  }
+
+  function changeDate(offset: number) {
+    const d = new Date(activeDate + 'T12:00:00')
+    d.setDate(d.getDate() + offset)
+    const newDate = d.toISOString().split('T')[0]
+    if (newDate > today) return
+    goToDate(newDate)
+  }
 
   // Search state
   const [query, setQuery] = useState('')
@@ -160,7 +190,7 @@ export default function LogClient({
     if (!selected) return
     const mult = parseFloat(servings) || 1
     const entry = {
-      log_date: today,
+      log_date: activeDate,
       meal_name: selected.description,
       calories: Math.round(selected.calories * mult),
       protein: Math.round(selected.protein * mult * 10) / 10,
@@ -177,7 +207,7 @@ export default function LogClient({
   async function addManual() {
     if (!manual.meal_name || !manual.calories) return
     const entry = {
-      log_date: today,
+      log_date: activeDate,
       meal_name: manual.meal_name,
       calories: parseInt(manual.calories) || 0,
       protein: parseFloat(manual.protein) || 0,
@@ -202,7 +232,7 @@ export default function LogClient({
       await fetch('/api/supp', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: existing.id }) })
       setSuppLogs(prev => prev.filter(s => s.id !== existing.id))
     } else {
-      const res = await fetch('/api/supp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ log_date: today, supplement_name: name }) })
+      const res = await fetch('/api/supp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ log_date: activeDate, supplement_name: name }) })
       const { data } = await res.json()
       if (data) setSuppLogs(prev => [...prev, data])
     }
@@ -251,9 +281,35 @@ export default function LogClient({
       </div>
 
       <div className="px-4 py-5 space-y-6 max-w-lg mx-auto">
+        {/* Date navigator - only on Today tab */}
+        {tab === 'today' && (
+          <div className="flex items-center justify-between bg-gray-900 rounded-xl px-4 py-2">
+            <button onClick={() => changeDate(-1)} className="text-gray-400 hover:text-white px-2 py-1 text-lg">‹</button>
+            <div className="text-center">
+              <input
+                type="date"
+                max={today}
+                value={activeDate}
+                onChange={e => e.target.value && goToDate(e.target.value)}
+                className="bg-transparent text-white text-sm font-medium text-center outline-none cursor-pointer"
+              />
+              {activeDate !== today && (
+                <button onClick={() => goToDate(today)} className="block mx-auto text-xs text-green-400 mt-0.5">Back to today</button>
+              )}
+            </div>
+            <button
+              onClick={() => changeDate(1)}
+              disabled={activeDate >= today}
+              className="text-gray-400 hover:text-white disabled:opacity-30 px-2 py-1 text-lg"
+            >›</button>
+          </div>
+        )}
+
         {/* Macro rings */}
         {tab === 'today' && <div>
-          <h2 className="text-sm text-gray-400 mb-3 font-medium">TODAY'S TOTALS</h2>
+          <h2 className="text-sm text-gray-400 mb-3 font-medium">
+            {activeDate === today ? "TODAY'S TOTALS" : new Date(activeDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase()}
+          </h2>
           <div className="bg-gray-900 rounded-2xl p-4 grid grid-cols-4 gap-2">
             <MacroRing label="Cal" value={totals.calories} target={targets?.calories ?? 2500} color="#22c55e" unit="" />
             <MacroRing label="Protein" value={Math.round(totals.protein)} target={targets?.protein ?? 150} color="#3b82f6" />
@@ -287,9 +343,10 @@ export default function LogClient({
         {tab === 'today' && (
           <div>
             <h2 className="text-sm text-gray-400 mb-3 font-medium">FOOD LOG</h2>
+            {dateLoading && <p className="text-gray-500 text-sm text-center py-6">Loading…</p>}
             <div className="space-y-2">
-              {logs.length === 0 && (
-                <p className="text-gray-600 text-sm text-center py-6">No food logged yet today</p>
+              {!dateLoading && logs.length === 0 && (
+                <p className="text-gray-600 text-sm text-center py-6">No food logged for this day</p>
               )}
               {logs.map(log => (
                 <div key={log.id} className="bg-gray-900 rounded-xl px-4 py-3 flex items-center justify-between">
@@ -339,7 +396,7 @@ export default function LogClient({
                 const label = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 
                 return (
-                  <div key={date} className="bg-gray-900 rounded-xl px-4 py-3 mb-2">
+                  <button key={date} onClick={() => goToDate(date)} className="w-full text-left bg-gray-900 rounded-xl px-4 py-3 mb-2 hover:bg-gray-800 transition-colors">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium">{label}</span>
                       <span className={`text-xs font-semibold ${pct >= 80 ? 'text-green-400' : pct >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -355,7 +412,7 @@ export default function LogClient({
                     <p className="text-xs text-gray-500">
                       {Math.round(total.protein)}g P · {Math.round(total.carbs)}g C · {Math.round(total.fat)}g F
                     </p>
-                  </div>
+                  </button>
                 )
               })
             })()}
