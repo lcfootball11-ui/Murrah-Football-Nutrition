@@ -1,0 +1,18 @@
+{
+  "items": [
+    {"name": "Chicken Finger", "portion": "1 finger (1.9 oz)", "calories": 130, "protein": 13, "carbs": 5, "fat": 7},
+    {"name": "Crinkle-Cut Fries", "portion": "1 serving (5.1 oz)", "calories": 400, "protein": 5, "carbs": 50, "fat": 20},
+    {"name": "Texas Toast", "portion": "1 slice (1.7 oz)", "calories": 150, "protein": 4, "carbs": 23, "fat": 4.5},
+    {"name": "Coleslaw", "portion": "1 serving (3.1 oz)", "calories": 100, "protein": 1, "carbs": 10, "fat": 6},
+    {"name": "Cane's Sauce", "portion": "1 serving (1.5 oz)", "calories": 190, "protein": 0, "carbs": 6, "fat": 18},
+    {"name": "Chicken Sandwich", "portion": "1 sandwich (10.4 oz)", "calories": 830, "protein": 47, "carbs": 69, "fat": 41},
+    {"name": "3 Finger Combo", "portion": "1 combo", "calories": 1050, "protein": 48, "carbs": 83, "fat": 59},
+    {"name": "Box Combo", "portion": "1 combo", "calories": 1290, "protein": 62, "carbs": 98, "fat": 72},
+    {"name": "Caniac Combo", "portion": "1 combo", "calories": 1840, "protein": 90, "carbs": 125, "fat": 108},
+    {"name": "Sandwich Combo", "portion": "1 combo", "calories": 1140, "protein": 51, "carbs": 108, "fat": 56},
+    {"name": "Box Combo - The Posty Way", "portion": "1 combo", "calories": 1740, "protein": 66, "carbs": 173, "fat": 89},
+    {"name": "Kid's Combo", "portion": "1 combo", "calories": 650, "protein": 29, "carbs": 39, "fat": 41},
+    {"name": "Kid's Combo - Louisville, KY", "portion": "1 combo", "calories": 610, "protein": 34, "carbs": 39, "fat": 35},
+    {"name": "Kid's Combo - Maryland", "portion": "1 combo", "calories": 420, "protein": 34, "carbs": 33, "fat": 16}
+  ]
+}
