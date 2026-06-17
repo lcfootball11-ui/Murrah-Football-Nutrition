@@ -119,7 +119,7 @@ export default function DashboardClient({
   return (
     <div className="min-h-screen mustang-gradient text-white pb-10 relative">
       {/* Left side panel with vertically stacked images */}
-      <div className="hidden lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:w-64 xl:w-80 2xl:w-96 lg:z-0 lg:flex lg:flex-col lg:overflow-hidden">
+      <div className="hidden lg:fixed lg:left-0 lg:top-[200px] lg:bottom-0 lg:w-64 xl:w-80 2xl:w-96 lg:z-0 lg:flex lg:flex-col lg:overflow-hidden">
         {[0, 1, 2].map((i) => (
           <div key={i} className="flex-1 border-b border-[#1a2844] relative overflow-hidden">
             {i === 0 && (
