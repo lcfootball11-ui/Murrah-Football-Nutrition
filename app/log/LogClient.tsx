@@ -304,36 +304,6 @@ export default function LogClient({
         </div>
       </div>
 
-      {/* Mobile bottom picture bar - only shows on small screens */}
-      <div className="flex lg:hidden h-40 md:h-56">
-        <div className="flex-1 relative overflow-hidden border-r border-[#1a2844]">
-          <img
-            src="/PigandPint.jpg"
-            alt="Murrah"
-            className="w-full h-full object-contain"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#08091a] to-transparent" />
-        </div>
-        <div className="flex-1 relative overflow-hidden">
-          <div className="relative w-full h-full">
-            {photos.map((photo, i) => (
-              <div
-                key={photo}
-                className="absolute inset-0 transition-opacity duration-1000"
-                style={{ opacity: i === photoIndex ? 1 : 0 }}
-              >
-                <img
-                  src={`/${photo}`}
-                  alt="Murrah Mustang"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#08091a] via-[#08091a]/40" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Header */}
       <div className="relative overflow-hidden">
         {/* Team photo background */}
@@ -716,6 +686,36 @@ export default function LogClient({
           </div>
         </div>
       )}
+
+      {/* Mobile bottom picture bar - only shows on small screens */}
+      <div className="flex lg:hidden h-40 md:h-56 mt-4">
+        <div className="flex-1 relative overflow-hidden border-r border-[#1a2844]">
+          <img
+            src="/PigandPint.jpg"
+            alt="Murrah"
+            className="w-full h-full object-contain"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#08091a] to-transparent" />
+        </div>
+        <div className="flex-1 relative overflow-hidden">
+          <div className="relative w-full h-full">
+            {photos.map((photo, i) => (
+              <div
+                key={photo}
+                className="absolute inset-0 transition-opacity duration-1000"
+                style={{ opacity: i === photoIndex ? 1 : 0 }}
+              >
+                <img
+                  src={`/${photo}`}
+                  alt="Murrah Mustang"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#08091a] via-[#08091a]/40" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
