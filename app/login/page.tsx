@@ -1,39 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    setSupabase(createClient())
+  }, [])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    if (!supabase) { setError('Loading...'); return }
     setLoading(true)
     setError('')
-
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    })
-
-    const data = await res.json()
-
-    if (!res.ok) {
-      setError(data.error || 'Sign in failed')
-      setLoading(false)
-      return
-    }
-
-    // Store email in localStorage for session
-    localStorage.setItem('userEmail', email)
-    localStorage.setItem('userId', data.userId)
-
-    // Redirect
-    router.push(data.redirectTo || '/log')
+    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    if (authError) { setError(authError.message); setLoading(false); return }
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
+    router.push(profile?.role === 'coach' ? '/dashboard' : '/log')
   }
 
   return (
@@ -68,6 +59,17 @@ export default function LoginPage() {
                 required
                 className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:bg-blue-500/5 transition-all text-base placeholder-slate-600"
                 placeholder="your@email.com"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:bg-blue-500/5 transition-all text-base placeholder-slate-600"
+                placeholder="••••••••"
               />
             </div>
             {error && (
