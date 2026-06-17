@@ -39,17 +39,18 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Fetch from custom foods (Popeyes, etc.)
+    // Fetch from custom foods (Popeyes, Wingstop, etc.)
+    // Search is case-insensitive and searches both name and restaurant source
     const supabase = getSupabaseClient()
     const { data: customFoods } = await supabase
       .from('custom_foods')
       .select('*')
-      .ilike('name', `%${query}%`)
+      .or(`name.ilike.%${query}%,source.ilike.%${query}%`)
       .limit(10)
 
     const customFoodsMapped = (customFoods ?? []).map((f: Record<string, unknown>) => ({
       fdcId: f.id,
-      description: `${f.name} - ${f.portion}`,
+      description: `${f.source} - ${f.name} (${f.portion})`,
       brandOwner: f.source,
       servingSize: 1,
       servingSizeUnit: f.portion,
