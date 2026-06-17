@@ -84,6 +84,11 @@ export default function LoginPage() {
             >
               {loading ? '🐴 Loading…' : 'Let\'s Go Mustangs →'}
             </button>
+            <div className="text-center mt-4">
+              <a href="/login/reset-password" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                Forgot your password?
+              </a>
+            </div>
           </form>
         </div>
 
