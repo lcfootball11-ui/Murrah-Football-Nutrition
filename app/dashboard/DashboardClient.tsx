@@ -51,7 +51,7 @@ export default function DashboardClient({
   ]
 
   useEffect(() => {
-    const interval = setInterval(() => setPhotoIndex(i => (i + 1) % photos.length), 5000)
+    const interval = setInterval(() => setPhotoIndex(i => (i + 1) % photos.length), 8000)
     return () => clearInterval(interval)
   }, [])
 

@@ -128,7 +128,7 @@ export default function LogClient({
     'IMG_9094.jpeg', 'IMG_9096.jpeg', 'IMG_9097.jpeg'
   ]
   useEffect(() => {
-    const interval = setInterval(() => setPhotoIndex(i => (i + 1) % photos.length), 5000)
+    const interval = setInterval(() => setPhotoIndex(i => (i + 1) % photos.length), 8000)
     return () => clearInterval(interval)
   }, [])
 
