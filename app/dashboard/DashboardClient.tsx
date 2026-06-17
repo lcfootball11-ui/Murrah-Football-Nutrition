@@ -104,22 +104,7 @@ export default function DashboardClient({
   const compliancePct = athletes.length > 0 ? Math.round((totalLogged / athletes.length) * 100) : 0
 
   return (
-    <div className="min-h-screen mustang-gradient text-white pb-10 relative">
-      {/* Side panel decorations */}
-      <div className="hidden lg:block fixed left-0 top-0 bottom-0 w-48 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute inset-0" style={{ backgroundImage: 'url(/murrah-team.jpg)', backgroundSize: 'cover', backgroundPosition: 'left center' }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-[#08091a]" />
-        <div className="absolute bottom-8 left-0 right-0 text-center">
-          <p className="text-white font-black text-lg tracking-widest" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', margin: '0 auto' }}>MUSTANGS</p>
-        </div>
-      </div>
-      <div className="hidden lg:block fixed right-0 top-0 bottom-0 w-48 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute inset-0" style={{ backgroundImage: 'url(/murrah-team.jpg)', backgroundSize: 'cover', backgroundPosition: 'right center' }} />
-        <div className="absolute inset-0 bg-gradient-to-l from-black/30 to-[#08091a]" />
-        <div className="absolute bottom-8 left-0 right-0 text-center">
-          <p className="text-white font-black text-lg tracking-widest" style={{ writingMode: 'vertical-rl', margin: '0 auto' }}>MURRAH</p>
-        </div>
-      </div>
+    <div className="min-h-screen mustang-gradient text-white pb-10">
 
       {/* Header */}
       <div className="relative overflow-hidden">

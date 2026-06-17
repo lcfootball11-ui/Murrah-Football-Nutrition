@@ -24,23 +24,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen mustang-gradient hero-gradient flex flex-col items-center justify-center px-4 relative overflow-hidden">
-      {/* Background — team photo at top, fading into dark */}
+      {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-0 left-0 right-0 h-72"
-          style={{ backgroundImage: 'url(/murrah-team.jpg)', backgroundSize: 'cover', backgroundPosition: 'center top' }}
-        />
-        <div className="absolute top-0 left-0 right-0 h-72 bg-gradient-to-b from-black/50 to-[#08091a]" />
-        {/* Side strips on desktop */}
-        <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-48 overflow-hidden">
-          <div className="absolute inset-0" style={{ backgroundImage: 'url(/murrah-team.jpg)', backgroundSize: 'cover', backgroundPosition: 'left center' }} />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-[#08091a]" />
-        </div>
-        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-48 overflow-hidden">
-          <div className="absolute inset-0" style={{ backgroundImage: 'url(/murrah-team.jpg)', backgroundSize: 'cover', backgroundPosition: 'right center' }} />
-          <div className="absolute inset-0 bg-gradient-to-l from-black/20 to-[#08091a]" />
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-[#08091a] to-transparent" />
+        <div className="absolute top-[-20%] left-[-10%] w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-80 h-80 bg-blue-800/15 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-sm relative z-10 animate-slide-up">
