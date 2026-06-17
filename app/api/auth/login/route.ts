@@ -46,7 +46,8 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (insertError) {
-        return NextResponse.json({ error: 'Failed to create account' }, { status: 400 })
+        console.error('Profile insert error:', insertError)
+        return NextResponse.json({ error: insertError.message || 'Failed to create account' }, { status: 400 })
       }
 
       userId = newProfile.id
