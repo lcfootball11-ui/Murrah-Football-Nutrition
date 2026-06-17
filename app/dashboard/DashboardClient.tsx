@@ -8,7 +8,7 @@ import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target } from 'lucide-r
 type Athlete = { id: string; full_name: string }
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
 type SuppLog = { user_id: string; supplement_name: string; taken: boolean }
-type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[] }
+type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[]; plan: 'gain' | 'loss' }
 
 function pct(val: number, target: number) {
   if (!target) return 0
@@ -36,7 +36,7 @@ export default function DashboardClient({
   const [showAddAthlete, setShowAddAthlete] = useState(false)
   const [showSetTargets, setShowSetTargets] = useState<string | null>(null)
   const [newAthlete, setNewAthlete] = useState({ full_name: '', email: '', password: '', plan: 'gain' as 'gain' | 'loss' })
-  const [targetForm, setTargetForm] = useState({ calories: '', protein: '', carbs: '', fat: '', supplements: '' })
+  const [targetForm, setTargetForm] = useState({ calories: '', protein: '', carbs: '', fat: '', supplements: '', plan: 'gain' as 'gain' | 'loss' })
   const [saving, setSaving] = useState(false)
   const [, startTransition] = useTransition()
 
@@ -64,7 +64,7 @@ export default function DashboardClient({
         await fetch('/api/targets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ coach_secret: 'MurrahFootballCover3$ky!Coach', user_id: created.id, ...defaults, supplements: [] }),
+          body: JSON.stringify({ coach_secret: 'MurrahFootballCover3$ky!Coach', user_id: created.id, ...defaults, supplements: [], plan: newAthlete.plan }),
         })
       }
       setShowAddAthlete(false)
@@ -90,6 +90,7 @@ export default function DashboardClient({
         carbs: parseFloat(targetForm.carbs) || 0,
         fat: parseFloat(targetForm.fat) || 0,
         supplements: supps,
+        plan: targetForm.plan,
       }),
     })
     setSaving(false)
@@ -168,9 +169,20 @@ export default function DashboardClient({
           const suppsTarget = target?.supplements ?? []
           const isExpanded = expanded === athlete.id
           const calTarget = target?.calories ?? 2500
+          const proTarget = target?.protein ?? 150
+          const plan = target?.plan ?? 'gain'
           const calPct = pct(totals.cal, calTarget)
-          const statusColor = calPct >= 80 ? '#22c55e' : calPct >= 40 ? '#3b82f6' : '#ef4444'
-          const statusEmoji = calPct >= 80 ? '🔥' : calPct >= 40 ? '💪' : '😤'
+
+          const proteinMet = totals.pro >= proTarget * 0.9
+          const calorieMet = plan === 'loss'
+            ? totals.cal <= calTarget * 1.05
+            : totals.cal >= calTarget * 0.9
+
+          const compliant = proteinMet && calorieMet
+          const hasLogged = totals.cal > 0
+
+          const statusColor = !hasLogged ? '#475569' : compliant ? '#22c55e' : '#ef4444'
+          const statusEmoji = !hasLogged ? '💤' : compliant ? (plan === 'gain' ? '🔥' : '✅') : '😡'
 
           return (
             <div key={athlete.id} className="card overflow-hidden">
@@ -182,7 +194,12 @@ export default function DashboardClient({
                   {athlete.full_name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="font-bold text-sm text-white truncate">{athlete.full_name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-sm text-white truncate">{athlete.full_name}</p>
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md shrink-0 ${plan === 'gain' ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-500/20 text-slate-300'}`}>
+                      {plan === 'gain' ? '📈' : '📉'}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${calPct}%`, background: statusColor, boxShadow: `0 0 6px ${statusColor}88` }} />
@@ -242,6 +259,7 @@ export default function DashboardClient({
                         carbs: String(t?.carbs ?? ''),
                         fat: String(t?.fat ?? ''),
                         supplements: (t?.supplements ?? []).join(', '),
+                        plan: t?.plan ?? 'gain',
                       })
                       setShowSetTargets(athlete.id)
                     }}
@@ -315,6 +333,22 @@ export default function DashboardClient({
               <h3 className="font-black text-xl flex items-center gap-2"><Target size={20} className="text-blue-400" /> Set Targets</h3>
               <button onClick={() => setShowSetTargets(null)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
             </div>
+            {/* Plan toggle */}
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2">Goal</label>
+              <div className="flex glass rounded-2xl p-1 gap-1">
+                {(['gain', 'loss'] as const).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setTargetForm(prev => ({ ...prev, plan: p }))}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${targetForm.plan === p ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                    {p === 'gain' ? '📈 Weight Gain' : '📉 Weight Loss'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               {[
                 { key: 'calories', label: 'Calories' },
