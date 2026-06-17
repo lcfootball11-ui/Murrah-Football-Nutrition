@@ -265,7 +265,7 @@ export default function LogClient({
     : new Date(activeDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 
   return (
-    <div className="min-h-screen mustang-gradient text-white pb-28 relative">
+    <div className="min-h-screen mustang-gradient text-white pb-56 lg:pb-28 relative">
       {/* Left side panel with vertically stacked images */}
       <div className="hidden lg:fixed lg:left-0 lg:top-[300px] lg:bottom-0 lg:w-64 xl:w-80 2xl:w-96 lg:z-0 lg:flex lg:flex-col lg:overflow-hidden">
         {[0, 1, 2].map((i) => (
@@ -301,6 +301,36 @@ export default function LogClient({
               <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#08091a] via-[#08091a]/40" />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Mobile bottom picture bar - only shows on small screens */}
+      <div className="flex lg:hidden fixed bottom-0 left-0 right-0 h-48 z-10">
+        <div className="flex-1 relative overflow-hidden border-r border-[#1a2844]">
+          <img
+            src="/PigandPint.jpg"
+            alt="Murrah"
+            className="w-full h-full object-contain"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#08091a] to-transparent" />
+        </div>
+        <div className="flex-1 relative overflow-hidden">
+          <div className="relative w-full h-full">
+            {photos.map((photo, i) => (
+              <div
+                key={photo}
+                className="absolute inset-0 transition-opacity duration-1000"
+                style={{ opacity: i === photoIndex ? 1 : 0 }}
+              >
+                <img
+                  src={`/${photo}`}
+                  alt="Murrah Mustang"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#08091a] via-[#08091a]/40" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
