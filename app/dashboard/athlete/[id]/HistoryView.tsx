@@ -96,6 +96,20 @@ export default function HistoryView({
     return { date, logs: dayLogs, totals }
   })
 
+  // Calculate metrics
+  const daysWithLogs = daysData.filter(d => d.totals.cal > 0)
+  const avgCalories = daysWithLogs.length > 0
+    ? Math.round(daysWithLogs.reduce((sum, d) => sum + d.totals.cal, 0) / daysWithLogs.length)
+    : 0
+  const avgProtein = daysWithLogs.length > 0
+    ? Math.round(daysWithLogs.reduce((sum, d) => sum + d.totals.pro, 0) / daysWithLogs.length)
+    : 0
+
+  // Calculate expected weight gain (1 lb = 3500 calorie surplus)
+  const calorieTarget = calTarget
+  const dailySurplus = avgCalories - calorieTarget
+  const expectedWeightGain = (dailySurplus * daysWithLogs.length) / 3500
+
   const pct = (val: number, target: number) => {
     if (!target) return 0
     return Math.min(Math.round((val / target) * 100), 100)
@@ -187,6 +201,30 @@ export default function HistoryView({
       </div>
 
       <div className="px-4 py-4 max-w-3xl mx-auto space-y-3">
+        {daysWithLogs.length > 0 && (
+          <div className="card p-4">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center">
+                <p className="text-xs font-bold text-slate-400 uppercase mb-1">Avg Calories</p>
+                <p className="text-2xl font-black text-blue-400">{avgCalories}</p>
+                <p className="text-xs text-slate-500 mt-0.5">target: {calTarget}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-bold text-slate-400 uppercase mb-1">Avg Protein</p>
+                <p className="text-2xl font-black text-blue-400">{avgProtein}g</p>
+                <p className="text-xs text-slate-500 mt-0.5">target: {proTarget}g</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-bold text-slate-400 uppercase mb-1">Expected Weight Gain</p>
+                <p className={`text-2xl font-black ${expectedWeightGain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {expectedWeightGain > 0 ? '+' : ''}{expectedWeightGain.toFixed(1)} lbs
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">in {daysWithLogs.length} days</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {daysData.length === 0 ? (
           <div className="glass rounded-2xl py-12 text-center">
             <p className="text-4xl mb-3">📊</p>
