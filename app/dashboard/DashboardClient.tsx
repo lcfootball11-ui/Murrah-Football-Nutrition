@@ -38,6 +38,7 @@ export default function DashboardClient({
   const [showAddAthlete, setShowAddAthlete] = useState(false)
   const [showAddCoach, setShowAddCoach] = useState(false)
   const [showSetTargets, setShowSetTargets] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
   const [newAthlete, setNewAthlete] = useState({ full_name: '', email: '', password: '', plan: 'gain' as 'gain' | 'loss' })
   const [newCoach, setNewCoach] = useState({ full_name: '', email: '', password: '' })
   const [targetForm, setTargetForm] = useState({ calories: '', protein: '', carbs: '', fat: '', supplements: '', plan: 'gain' as 'gain' | 'loss', target_weight: '', goal_weight: '' })
@@ -112,8 +113,7 @@ export default function DashboardClient({
     }
   }
 
-  async function deleteAthlete(athleteId: string) {
-    if (!confirm('Are you sure you want to remove this athlete? This cannot be undone.')) return
+  async function confirmDeleteAthlete(athleteId: string) {
     setSaving(true)
     const res = await fetch('/api/admin/delete-athlete', {
       method: 'POST',
@@ -122,6 +122,7 @@ export default function DashboardClient({
     })
     setSaving(false)
     if (res.ok) {
+      setShowDeleteConfirm(null)
       router.refresh()
     } else {
       const err = await res.json()
@@ -325,7 +326,7 @@ export default function DashboardClient({
                   <span className="text-lg">{statusEmoji}</span>
                   {isExpanded && (
                     <button
-                      onClick={(e) => { e.stopPropagation(); deleteAthlete(athlete.id) }}
+                      onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(athlete.id) }}
                       className="text-slate-600 hover:text-red-400 transition-colors p-1"
                       title="Remove athlete"
                     >
@@ -537,6 +538,33 @@ export default function DashboardClient({
             <button onClick={() => saveTargets(showSetTargets)} disabled={saving} className="w-full py-3.5 rounded-2xl btn-blue disabled:opacity-50 text-white font-bold">
               {saving ? 'Saving…' : 'Save Targets ✓'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 flex items-center justify-center" onClick={e => e.target === e.currentTarget && setShowDeleteConfirm(null)}>
+          <div className="bg-gray-900 rounded-2xl p-6 max-w-sm w-full mx-4 border border-red-500/30">
+            <h3 className="font-black text-lg text-white mb-2">Remove Athlete?</h3>
+            <p className="text-sm text-gray-400 mb-6">
+              This will permanently delete the athlete account and all their data. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="flex-1 py-2.5 rounded-xl glass text-gray-300 font-bold text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => confirmDeleteAthlete(showDeleteConfirm)}
+                disabled={saving}
+                className="flex-1 py-2.5 rounded-xl bg-red-500/80 hover:bg-red-600 disabled:opacity-50 text-white font-bold text-sm transition-colors"
+              >
+                {saving ? 'Deleting…' : 'Yes, Remove'}
+              </button>
+            </div>
           </div>
         </div>
       )}
