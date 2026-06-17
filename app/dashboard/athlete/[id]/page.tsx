@@ -15,26 +15,52 @@ function adminClient() {
 
 export default async function AthleteHistoryPage({ params }: { params: { id: string } }) {
   try {
+    console.log('[AthleteHistory] Loading for athlete:', params.id)
+
     const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) redirect('/login')
+    if (!user) {
+      console.log('[AthleteHistory] No user found, redirecting to login')
+      redirect('/login')
+    }
 
     const admin = adminClient()
-    const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
+    const { data: profile, error: profileError } = await admin.from('profiles').select('role').eq('id', user.id).single()
 
-    if (profile?.role !== 'coach') redirect('/log')
+    if (profileError || !profile) {
+      console.log('[AthleteHistory] Profile error or not found:', profileError)
+      redirect('/login')
+    }
+
+    if (profile.role !== 'coach') {
+      console.log('[AthleteHistory] User is not a coach, redirecting to /log')
+      redirect('/log')
+    }
 
     // Get athlete info
-    const { data: athlete } = await admin.from('profiles').select('id, full_name').eq('id', params.id).single()
+    const { data: athlete, error: athleteError } = await admin.from('profiles').select('id, full_name').eq('id', params.id).single()
 
-    if (!athlete) redirect('/dashboard')
+    if (athleteError || !athlete) {
+      console.log('[AthleteHistory] Athlete not found:', athleteError, 'params.id:', params.id)
+      redirect('/dashboard')
+    }
+
+    console.log('[AthleteHistory] Found athlete:', athlete.full_name)
 
     // Get all logs for this athlete
-    const { data: logs } = await admin.from('nutrition_logs').select('*').eq('user_id', params.id).order('log_date', { ascending: false })
+    const { data: logs, error: logsError } = await admin.from('nutrition_logs').select('*').eq('user_id', params.id).order('log_date', { ascending: false })
+
+    if (logsError) {
+      console.log('[AthleteHistory] Logs error:', logsError)
+    }
 
     // Get targets
-    const { data: targets } = await admin.from('macro_targets').select('*').eq('user_id', params.id).single()
+    const { data: targets, error: targetsError } = await admin.from('macro_targets').select('*').eq('user_id', params.id).single()
+
+    if (targetsError && targetsError.code !== 'PGRST116') {
+      console.log('[AthleteHistory] Targets error:', targetsError)
+    }
 
     return (
       <AthleteHistoryClient
@@ -45,7 +71,7 @@ export default async function AthleteHistoryPage({ params }: { params: { id: str
       />
     )
   } catch (error) {
-    console.error('Error loading athlete history:', error)
+    console.error('[AthleteHistory] Caught error:', error)
     redirect('/dashboard')
   }
 }
