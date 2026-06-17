@@ -266,6 +266,24 @@ export default function LogClient({
 
   return (
     <div className="min-h-screen mustang-gradient text-white pb-28 relative">
+      {/* Left side panel with vertically stacked images */}
+      <div className="hidden lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:w-64 xl:w-80 2xl:w-96 lg:z-0 lg:flex lg:flex-col lg:overflow-hidden">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="flex-1 border-b border-[#1a2844] relative overflow-hidden">
+            {i === 0 && (
+              <>
+                <img
+                  src="/PigandPint.jpg"
+                  alt="Murrah"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#08091a] to-transparent" />
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
       {/* Right side panel with rotating player photos */}
       <div className="hidden lg:fixed lg:right-0 lg:top-0 lg:bottom-0 lg:w-64 xl:w-80 2xl:w-96 lg:z-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:overflow-hidden">
         <div className="relative w-full h-full">
