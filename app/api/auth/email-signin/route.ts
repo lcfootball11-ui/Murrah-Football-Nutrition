@@ -41,11 +41,14 @@ export async function POST(request: NextRequest) {
       userId = newUser.user.id
 
       // Create profile for new user
-      await admin.from('profiles').insert({
+      const { error: profileError } = await admin.from('profiles').insert({
         id: userId,
         full_name: email.split('@')[0],
         role: 'athlete',
-      }).catch(err => console.error('Profile creation error:', err))
+      })
+      if (profileError) {
+        console.error('Profile creation error:', profileError)
+      }
     } else if (createError?.message?.includes('already been registered')) {
       // User exists, try to sign them in
       // This is a bit of a hack - we update their password then sign in
