@@ -3,7 +3,6 @@
 import { useState, useTransition, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History } from 'lucide-react'
 
 type Athlete = { id: string; full_name: string }
@@ -376,12 +375,12 @@ export default function DashboardClient({
                   )}
 
                   <div className="flex items-center gap-3">
-                    <Link
-                      href={`/dashboard/athlete/${athlete.id}`}
-                      className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                    <button
+                      onClick={() => router.push(`/dashboard/athlete/${athlete.id}`)}
+                      className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
                     >
                       <History size={12} /> View history →
-                    </Link>
+                    </button>
                     <button
                       onClick={() => {
                         const t = targets.find(x => x.user_id === athlete.id)
