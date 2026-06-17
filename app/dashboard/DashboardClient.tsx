@@ -425,7 +425,7 @@ export default function DashboardClient({
                 { key: 'protein', label: 'Protein (g)' },
                 { key: 'carbs', label: 'Carbs (g)' },
                 { key: 'fat', label: 'Fat (g)' },
-                { key: 'target_weight', label: 'Target Weight (lbs)' },
+                { key: 'target_weight', label: 'Current Weight (lbs)' },
                 { key: 'goal_weight', label: 'Goal Weight (lbs)' },
               ].map(({ key, label }) => (
                 <div key={key}>
