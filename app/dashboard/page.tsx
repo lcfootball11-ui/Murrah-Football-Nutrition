@@ -3,6 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import DashboardClient from './DashboardClient'
 
+export const dynamic = 'force-dynamic'
+
 function calcStreak(dates: string[], today: string): number {
   const dateSet = new Set(dates)
   let streak = 0
