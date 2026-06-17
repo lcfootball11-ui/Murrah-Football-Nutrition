@@ -13,7 +13,8 @@ function adminClient() {
   )
 }
 
-export default async function AthleteHistoryPage({ params }: { params: { id: string } }) {
+export default async function AthleteHistoryPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params
   console.log('[AthleteHistory] Loading for athlete ID:', params.id)
 
   const supabase = await createServerClient()
