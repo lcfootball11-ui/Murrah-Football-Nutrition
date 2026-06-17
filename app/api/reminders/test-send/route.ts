@@ -28,6 +28,12 @@ export async function POST(request: NextRequest) {
     // Format phone number to E.164 format
     const formattedNumber = phoneNumber.startsWith('+') ? phoneNumber : `+1${phoneNumber.replace(/\D/g, '')}`
 
+    console.log('Sending SMS:', {
+      to: formattedNumber,
+      message,
+      timestamp: new Date().toISOString(),
+    })
+
     const params = {
       Message: message,
       PhoneNumber: formattedNumber,
@@ -35,6 +41,8 @@ export async function POST(request: NextRequest) {
 
     const command = new PublishCommand(params)
     const response = await snsClient.send(command)
+
+    console.log('SNS Response:', response)
 
     return NextResponse.json({
       success: true,
