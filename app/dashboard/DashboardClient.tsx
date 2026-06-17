@@ -21,6 +21,7 @@ export default function DashboardClient({
   logs,
   suppLogs,
   targets,
+  streaks,
   today,
 }: {
   coachName: string
@@ -28,6 +29,7 @@ export default function DashboardClient({
   logs: Log[]
   suppLogs: SuppLog[]
   targets: Target[]
+  streaks: Record<string, number>
   today: string
 }) {
   const supabase = createClient()
@@ -171,6 +173,7 @@ export default function DashboardClient({
           const calTarget = target?.calories ?? 2500
           const proTarget = target?.protein ?? 150
           const plan = target?.plan ?? 'gain'
+          const athleteStreak = streaks[athlete.id] ?? 0
           const calPct = pct(totals.cal, calTarget)
 
           const proteinMet = totals.pro >= proTarget * 0.9
@@ -208,6 +211,11 @@ export default function DashboardClient({
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  {athleteStreak > 0 && (
+                    <div className="streak-badge rounded-xl px-2 py-1 text-center">
+                      <p className="text-xs font-black text-white leading-none">{athleteStreak}🔥</p>
+                    </div>
+                  )}
                   <span className="text-lg">{statusEmoji}</span>
                   {isExpanded ? <ChevronUp size={15} className="text-slate-500" /> : <ChevronDown size={15} className="text-slate-500" />}
                 </div>

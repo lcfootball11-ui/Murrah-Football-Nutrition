@@ -105,6 +105,11 @@ export default function LogClient({
   const [mode, setMode] = useState<'search' | 'manual'>('search')
   const [historyLogs, setHistoryLogs] = useState<{ log_date: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [streak, setStreak] = useState(0)
+
+  useEffect(() => {
+    fetch('/api/streak').then(r => r.json()).then(d => setStreak(d.streak ?? 0))
+  }, [])
 
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<FoodResult[]>([])
@@ -186,7 +191,10 @@ export default function LogClient({
     }
     const res = await fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) })
     const { data } = await res.json()
-    if (data) setLogs(prev => [...prev, data])
+    if (data) {
+      setLogs(prev => [...prev, data])
+      fetch('/api/streak').then(r => r.json()).then(d => setStreak(d.streak ?? 0))
+    }
     resetModal()
   }
 
@@ -203,7 +211,10 @@ export default function LogClient({
     }
     const res = await fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) })
     const { data } = await res.json()
-    if (data) setLogs(prev => [...prev, data])
+    if (data) {
+      setLogs(prev => [...prev, data])
+      fetch('/api/streak').then(r => r.json()).then(d => setStreak(d.streak ?? 0))
+    }
     resetModal()
   }
 
@@ -251,8 +262,14 @@ export default function LogClient({
           <div>
             <p className="text-xs font-bold text-blue-400 uppercase tracking-widest">Murrah Mustangs 🐴</p>
             <h1 className="text-2xl font-black text-white mt-0.5">Hey, {firstName}!</h1>
-            <p className="text-slate-400 text-xs mt-0.5">Fuel up. Show out.</p>
+            <p className="text-slate-400 text-xs mt-0.5">MustangUp 💪</p>
           </div>
+          {streak > 0 && (
+            <div className="streak-badge rounded-2xl px-3 py-2 text-center mr-10">
+              <p className="text-xl font-black text-white leading-none">{streak}</p>
+              <p className="text-xs font-bold text-blue-300 leading-none mt-0.5">🔥 day{streak !== 1 ? 's' : ''}</p>
+            </div>
+          )}
           <button onClick={signOut} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors mt-1">
             <LogOut size={18} />
           </button>
