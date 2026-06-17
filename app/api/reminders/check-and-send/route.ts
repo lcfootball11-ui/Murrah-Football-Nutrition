@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
         // Send reminder if below 50%
         if (percentageOfGoal < 50) {
           const percentage = Math.round(percentageOfGoal)
-          const message = `Hey ${athlete.full_name}! 🏈 You're at ${percentage}% of your nutrition goal. Log your meals on the MustangUp tracker to hit your targets!`
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mustangup.vercel.app'
+          const message = `@${athlete.full_name} 🏈 You're at ${percentage}% of your nutrition goal!\n\nLog your meals now: ${appUrl}/log\n\nLet's hit those targets! 💪`
 
           // Send SMS via our endpoint
           const smsResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/reminders/send-sms`, {
