@@ -112,6 +112,23 @@ export default function DashboardClient({
     }
   }
 
+  async function deleteAthlete(athleteId: string) {
+    if (!confirm('Are you sure you want to remove this athlete? This cannot be undone.')) return
+    setSaving(true)
+    const res = await fetch('/api/admin/delete-athlete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ athlete_id: athleteId }),
+    })
+    setSaving(false)
+    if (res.ok) {
+      router.refresh()
+    } else {
+      const err = await res.json()
+      alert(err.error ?? 'Failed to delete athlete')
+    }
+  }
+
   async function saveTargets(athleteId: string) {
     setSaving(true)
     const supps = targetForm.supplements.split(',').map(s => s.trim()).filter(Boolean)
@@ -306,6 +323,15 @@ export default function DashboardClient({
                     </div>
                   )}
                   <span className="text-lg">{statusEmoji}</span>
+                  {isExpanded && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteAthlete(athlete.id) }}
+                      className="text-slate-600 hover:text-red-400 transition-colors p-1"
+                      title="Remove athlete"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
                   {isExpanded ? <ChevronUp size={15} className="text-slate-500" /> : <ChevronDown size={15} className="text-slate-500" />}
                 </div>
               </button>
