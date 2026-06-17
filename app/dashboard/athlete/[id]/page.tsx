@@ -14,27 +14,39 @@ function adminClient() {
 }
 
 export default async function AthleteHistoryPage({ params }: { params: { id: string } }) {
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const supabase = await createServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+    if (!user) {
+      redirect('/login')
+    }
 
-  const admin = adminClient()
-  const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
+    const admin = adminClient()
+    const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
 
-  if (profile?.role !== 'coach') redirect('/log')
+    if (!profile || profile.role !== 'coach') {
+      redirect('/log')
+    }
 
-  const { data: athlete } = await admin.from('profiles').select('id, full_name').eq('id', params.id).single()
-  if (!athlete) redirect('/dashboard')
+    const { data: athlete, error: athleteError } = await admin.from('profiles').select('id, full_name').eq('id', params.id).single()
 
-  const { data: logs } = await admin.from('nutrition_logs').select('*').eq('user_id', params.id).order('log_date', { ascending: false })
-  const { data: targets } = await admin.from('macro_targets').select('*').eq('user_id', params.id).single()
+    if (athleteError || !athlete) {
+      redirect('/dashboard')
+    }
 
-  return (
-    <HistoryView
-      athlete={athlete}
-      logs={logs || []}
-      targets={targets}
-    />
-  )
+    const { data: logs } = await admin.from('nutrition_logs').select('*').eq('user_id', params.id).order('log_date', { ascending: false })
+    const { data: targets } = await admin.from('macro_targets').select('*').eq('user_id', params.id).single()
+
+    return (
+      <HistoryView
+        athlete={athlete}
+        logs={logs || []}
+        targets={targets}
+      />
+    )
+  } catch (error) {
+    console.error('Error in athlete history page:', error)
+    redirect('/dashboard')
+  }
 }
