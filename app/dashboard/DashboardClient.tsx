@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History } from 'lucide-react'
 
-type Athlete = { id: string; full_name: string; phone_number?: string | null; reminder_enabled?: boolean }
+type Athlete = { id: string; full_name: string; email?: string; phone_number?: string | null; reminder_enabled?: boolean }
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
 type SuppLog = { user_id: string; supplement_name: string; taken: boolean }
 type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[]; plan: 'gain' | 'loss'; target_weight?: number; goal_weight?: number }
@@ -46,6 +46,9 @@ export default function DashboardClient({
   const [athletePhones, setAthletePhones] = useState<Record<string, string>>({})
   const [editingPhoneId, setEditingPhoneId] = useState<string | null>(null)
   const [reminderToggles, setReminderToggles] = useState<Record<string, boolean>>({})
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({})
+  const [tempPasswords, setTempPasswords] = useState<Record<string, string>>({})
+  const [generatingPassword, setGeneratingPassword] = useState<string | null>(null)
   const [, startTransition] = useTransition()
   const [photoIndex, setPhotoIndex] = useState(0)
   const photoList = [
@@ -200,6 +203,23 @@ export default function DashboardClient({
       const err = await res.json()
       alert(err.error ?? 'Failed to update reminder settings')
       router.refresh()
+    }
+  }
+
+  async function generateTempPassword(athleteId: string) {
+    setGeneratingPassword(athleteId)
+    const res = await fetch('/api/admin/generate-temp-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ athlete_id: athleteId }),
+    })
+    setGeneratingPassword(null)
+    if (res.ok) {
+      const data = await res.json()
+      setTempPasswords({ ...tempPasswords, [athleteId]: data.tempPassword })
+      setShowPasswords({ ...showPasswords, [athleteId]: true })
+    } else {
+      alert('Failed to generate password')
     }
   }
 
@@ -424,6 +444,37 @@ export default function DashboardClient({
                   )}
 
                   <div className="space-y-3 border-t border-white/5 pt-3">
+                    <div>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Login Credentials</p>
+                      <div className="glass rounded-xl p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs text-slate-400">Email (Username)</p>
+                            <p className="text-sm font-bold text-white font-mono">{athlete.email || 'N/A'}</p>
+                          </div>
+                        </div>
+                        <div className="border-t border-white/5 pt-2">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs text-slate-400">Temporary Password</p>
+                              {tempPasswords[athlete.id] && showPasswords[athlete.id] ? (
+                                <p className="text-sm font-bold text-yellow-300 font-mono bg-yellow-500/10 px-2 py-1 rounded inline-block mt-1">{tempPasswords[athlete.id]}</p>
+                              ) : (
+                                <p className="text-xs text-slate-500 mt-1">Click to generate</p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => generateTempPassword(athlete.id)}
+                              disabled={generatingPassword === athlete.id}
+                              className="text-xs font-bold text-blue-400 hover:text-blue-300 disabled:opacity-50"
+                            >
+                              {generatingPassword === athlete.id ? 'Generating...' : 'Generate New'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div>
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Phone & Reminders</p>
                       <div className="glass rounded-xl p-3 space-y-2">
