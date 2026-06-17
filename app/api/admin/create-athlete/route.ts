@@ -33,5 +33,5 @@ export async function POST(request: NextRequest) {
     role: 'athlete',
   })
 
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true, data: { id: newUser.user.id } })
 }

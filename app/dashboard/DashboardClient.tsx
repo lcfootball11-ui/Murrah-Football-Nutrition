@@ -35,7 +35,7 @@ export default function DashboardClient({
   const [expanded, setExpanded] = useState<string | null>(null)
   const [showAddAthlete, setShowAddAthlete] = useState(false)
   const [showSetTargets, setShowSetTargets] = useState<string | null>(null)
-  const [newAthlete, setNewAthlete] = useState({ full_name: '', email: '', password: '' })
+  const [newAthlete, setNewAthlete] = useState({ full_name: '', email: '', password: '', plan: 'gain' as 'gain' | 'loss' })
   const [targetForm, setTargetForm] = useState({ calories: '', protein: '', carbs: '', fat: '', supplements: '' })
   const [saving, setSaving] = useState(false)
   const [, startTransition] = useTransition()
@@ -55,8 +55,20 @@ export default function DashboardClient({
     })
     setSaving(false)
     if (res.ok) {
+      // Auto-set default macro targets based on plan
+      const { data: created } = await res.json()
+      if (created?.id) {
+        const defaults = newAthlete.plan === 'gain'
+          ? { calories: 3200, protein: 180, carbs: 400, fat: 90 }
+          : { calories: 2000, protein: 160, carbs: 200, fat: 60 }
+        await fetch('/api/targets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coach_secret: 'MurrahFootballCover3$ky!Coach', user_id: created.id, ...defaults, supplements: [] }),
+        })
+      }
       setShowAddAthlete(false)
-      setNewAthlete({ full_name: '', email: '', password: '' })
+      setNewAthlete({ full_name: '', email: '', password: '', plan: 'gain' })
       router.refresh()
     } else {
       const err = await res.json()
@@ -253,6 +265,25 @@ export default function DashboardClient({
               <h3 className="font-black text-xl">Add Athlete 🏈</h3>
               <button onClick={() => setShowAddAthlete(false)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
             </div>
+            {/* Plan toggle */}
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2">Goal</label>
+              <div className="flex glass rounded-2xl p-1 gap-1">
+                {(['gain', 'loss'] as const).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setNewAthlete(prev => ({ ...prev, plan: p }))}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${newAthlete.plan === p ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                    {p === 'gain' ? '📈 Weight Gain' : '📉 Weight Loss'}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-slate-600 mt-1.5 text-center">
+                {newAthlete.plan === 'gain' ? 'Default: 3,200 cal · 180g P · 400g C · 90g F' : 'Default: 2,000 cal · 160g P · 200g C · 60g F'}
+              </p>
+            </div>
+
             {[
               { key: 'full_name', label: 'Full Name', type: 'text', placeholder: 'John Smith' },
               { key: 'email', label: 'Email', type: 'email', placeholder: 'john@example.com' },
