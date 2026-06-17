@@ -45,6 +45,8 @@ export default function DashboardClient({
   const [saving, setSaving] = useState(false)
   const [athletePhones, setAthletePhones] = useState<Record<string, string>>({})
   const [editingPhoneId, setEditingPhoneId] = useState<string | null>(null)
+  const [athleteEmails, setAthleteEmails] = useState<Record<string, string>>({})
+  const [editingEmailId, setEditingEmailId] = useState<string | null>(null)
   const [reminderToggles, setReminderToggles] = useState<Record<string, boolean>>({})
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({})
   const [tempPasswords, setTempPasswords] = useState<Record<string, string>>({})
@@ -220,6 +222,23 @@ export default function DashboardClient({
       setShowPasswords({ ...showPasswords, [athleteId]: true })
     } else {
       alert('Failed to generate password')
+    }
+  }
+
+  async function updateAthleteEmail(athleteId: string, email: string) {
+    setSaving(true)
+    const res = await fetch('/api/admin/update-athlete-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ athlete_id: athleteId, email }),
+    })
+    setSaving(false)
+    if (res.ok) {
+      setEditingEmailId(null)
+      router.refresh()
+    } else {
+      const err = await res.json()
+      alert(err.error ?? 'Failed to update email')
     }
   }
 
@@ -447,11 +466,39 @@ export default function DashboardClient({
                     <div>
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Login Credentials</p>
                       <div className="glass rounded-xl p-3 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1">
                             <p className="text-xs text-slate-400">Email (Username)</p>
-                            <p className="text-sm font-bold text-white font-mono">{athlete.email || 'N/A'}</p>
+                            {editingEmailId === athlete.id ? (
+                              <input
+                                type="email"
+                                value={athleteEmails[athlete.id] || athlete.email || ''}
+                                onChange={(e) => setAthleteEmails({ ...athleteEmails, [athlete.id]: e.target.value })}
+                                className="mt-1 w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-sm text-white font-mono focus:outline-none focus:border-blue-500"
+                              />
+                            ) : (
+                              <p className="text-sm font-bold text-white font-mono">{athlete.email || 'N/A'}</p>
+                            )}
                           </div>
+                          {editingEmailId === athlete.id ? (
+                            <button
+                              onClick={() => updateAthleteEmail(athlete.id, athleteEmails[athlete.id])}
+                              disabled={saving}
+                              className="text-xs font-bold text-green-400 hover:text-green-300 disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {saving ? 'Saving...' : 'Save'}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setEditingEmailId(athlete.id)
+                                setAthleteEmails({ ...athleteEmails, [athlete.id]: athlete.email || '' })
+                              }}
+                              className="text-xs font-bold text-blue-400 hover:text-blue-300 whitespace-nowrap"
+                            >
+                              Edit
+                            </button>
+                          )}
                         </div>
                         <div className="border-t border-white/5 pt-2">
                           <div className="flex items-center justify-between">
