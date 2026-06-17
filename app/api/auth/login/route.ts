@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 
 function adminClient() {
   return createClient(
@@ -34,10 +35,12 @@ export async function POST(request: NextRequest) {
       userId = existingProfile.id
       role = existingProfile.role || 'athlete'
     } else {
-      // Create new user profile
+      // Create new user profile with generated UUID
+      const newId = randomUUID()
       const { data: newProfile, error: insertError } = await admin
         .from('profiles')
         .insert({
+          id: newId,
           email,
           full_name: email.split('@')[0],
           role: 'athlete',
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: insertError.message || 'Failed to create account' }, { status: 400 })
       }
 
-      userId = newProfile.id
+      userId = newProfile?.id || newId
     }
 
     return NextResponse.json({
