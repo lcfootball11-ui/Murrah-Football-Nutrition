@@ -10,7 +10,7 @@ function adminClient() {
 }
 
 export async function POST(request: NextRequest) {
-  const { coach_secret, user_id, calories, protein, carbs, fat, supplements, plan } = await request.json()
+  const { coach_secret, user_id, calories, protein, carbs, fat, supplements, plan, target_weight, goal_weight } = await request.json()
 
   if (coach_secret !== process.env.COACH_SECRET) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
   const admin = adminClient()
   const { error } = await admin.from('macro_targets').upsert(
-    { user_id, calories, protein, carbs, fat, supplements, plan: plan ?? 'gain' },
+    { user_id, calories, protein, carbs, fat, supplements, plan: plan ?? 'gain', target_weight: target_weight || null, goal_weight: goal_weight || null },
     { onConflict: 'user_id' }
   )
 

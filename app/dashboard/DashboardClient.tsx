@@ -8,7 +8,7 @@ import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target } from 'lucide-r
 type Athlete = { id: string; full_name: string }
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
 type SuppLog = { user_id: string; supplement_name: string; taken: boolean }
-type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[]; plan: 'gain' | 'loss' }
+type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[]; plan: 'gain' | 'loss'; target_weight?: number; goal_weight?: number }
 
 function pct(val: number, target: number) {
   if (!target) return 0
@@ -38,7 +38,7 @@ export default function DashboardClient({
   const [showAddAthlete, setShowAddAthlete] = useState(false)
   const [showSetTargets, setShowSetTargets] = useState<string | null>(null)
   const [newAthlete, setNewAthlete] = useState({ full_name: '', email: '', password: '', plan: 'gain' as 'gain' | 'loss' })
-  const [targetForm, setTargetForm] = useState({ calories: '', protein: '', carbs: '', fat: '', supplements: '', plan: 'gain' as 'gain' | 'loss' })
+  const [targetForm, setTargetForm] = useState({ calories: '', protein: '', carbs: '', fat: '', supplements: '', plan: 'gain' as 'gain' | 'loss', target_weight: '', goal_weight: '' })
   const [saving, setSaving] = useState(false)
   const [, startTransition] = useTransition()
   const [photoIndex, setPhotoIndex] = useState(0)
@@ -106,6 +106,8 @@ export default function DashboardClient({
         fat: parseFloat(targetForm.fat) || 0,
         supplements: supps,
         plan: targetForm.plan,
+        target_weight: targetForm.target_weight ? parseFloat(targetForm.target_weight) : null,
+        goal_weight: targetForm.goal_weight ? parseFloat(targetForm.goal_weight) : null,
       }),
     })
     setSaving(false)
@@ -326,6 +328,8 @@ export default function DashboardClient({
                         fat: String(t?.fat ?? ''),
                         supplements: (t?.supplements ?? []).join(', '),
                         plan: t?.plan ?? 'gain',
+                        target_weight: String(t?.target_weight ?? ''),
+                        goal_weight: String(t?.goal_weight ?? ''),
                       })
                       setShowSetTargets(athlete.id)
                     }}
@@ -421,6 +425,8 @@ export default function DashboardClient({
                 { key: 'protein', label: 'Protein (g)' },
                 { key: 'carbs', label: 'Carbs (g)' },
                 { key: 'fat', label: 'Fat (g)' },
+                { key: 'target_weight', label: 'Target Weight (lbs)' },
+                { key: 'goal_weight', label: 'Goal Weight (lbs)' },
               ].map(({ key, label }) => (
                 <div key={key}>
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</label>
