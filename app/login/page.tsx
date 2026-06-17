@@ -35,12 +35,18 @@ export default function LoginPage() {
       return
     }
 
-    // Set session with access token
-    if (data.accessToken && data.userId) {
-      await supabase.auth.setSession({
-        access_token: data.accessToken,
-        refresh_token: '',
+    // Verify the magic link token
+    if (data.token) {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        token_hash: data.token,
+        type: 'magiclink',
       })
+
+      if (verifyError) {
+        setError('Sign in failed')
+        setLoading(false)
+        return
+      }
     }
 
     // Redirect

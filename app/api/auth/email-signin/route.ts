@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { jwtVerify, SignJWT } from 'jose'
 
 function adminClient() {
   return createClient(
@@ -8,21 +7,6 @@ function adminClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
-}
-
-async function generateSupabaseJWT(userId: string) {
-  const secret = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET || '')
-
-  const jwt = await new SignJWT({
-    sub: userId,
-    aud: 'authenticated',
-    role: 'authenticated',
-  })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime('24h')
-    .sign(secret)
-
-  return jwt
 }
 
 export async function POST(request: NextRequest) {
@@ -67,16 +51,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Generate a magic link to get a valid token
+    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+      type: 'magiclink',
+      email,
+    })
+
+    if (linkError) {
+      return NextResponse.json({ error: linkError.message }, { status: 400 })
+    }
+
+    // Extract token from the link
+    const actionLink = linkData.properties?.action_link || ''
+    const tokenMatch = actionLink.match(/token_hash=([^&]+)/)
+    const token = tokenMatch ? tokenMatch[1] : ''
+
     // Get user profile to determine redirect
     const { data: profile } = await admin.from('profiles').select('role').eq('id', userId).single()
 
-    // Generate JWT token
-    const accessToken = await generateSupabaseJWT(userId)
-
     return NextResponse.json({
       success: true,
-      accessToken,
-      userId,
+      token,
       redirectTo: profile?.role === 'coach' ? '/dashboard' : '/log',
     })
   } catch (error: any) {
