@@ -120,15 +120,18 @@ export default function LogClient({
   const [manual, setManual] = useState({ meal_name: '', calories: '', protein: '', carbs: '', fat: '' })
   const [, startTransition] = useTransition()
   const [photoIndex, setPhotoIndex] = useState(0)
-  const photos = [
+  const photoList = [
     'IMG_9077.jpeg', 'IMG_9079.jpeg', 'IMG_9080.jpeg', 'IMG_9081.jpeg',
     'IMG_9082.jpeg', 'IMG_9083.jpeg', 'IMG_9084.jpeg', 'IMG_9085.jpeg',
     'IMG_9086.jpeg', 'IMG_9087.jpeg', 'IMG_9088.jpeg', 'IMG_9089.jpeg',
     'IMG_9090.jpeg', 'IMG_9091.jpeg', 'IMG_9092.jpeg', 'IMG_9093.jpeg',
     'IMG_9094.jpeg', 'IMG_9096.jpeg', 'IMG_9097.jpeg'
   ]
+  const [photos, setPhotos] = useState(photoList)
   useEffect(() => {
-    const interval = setInterval(() => setPhotoIndex(i => (i + 1) % photos.length), 8000)
+    const shuffled = [...photoList].sort(() => Math.random() - 0.5)
+    setPhotos(shuffled)
+    const interval = setInterval(() => setPhotoIndex(i => (i + 1) % shuffled.length), 8000)
     return () => clearInterval(interval)
   }, [])
 
