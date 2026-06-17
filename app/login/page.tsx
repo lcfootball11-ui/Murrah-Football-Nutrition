@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [sent, setSent] = useState(false)
   const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     setSupabase(createClient())
@@ -19,15 +20,28 @@ export default function LoginPage() {
     if (!supabase) { setError('Loading...'); return }
     setLoading(true)
     setError('')
-    const { error: authError } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+
+    const res = await fetch('/api/auth/email-signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
     })
-    if (authError) { setError(authError.message); setLoading(false); return }
-    setSent(true)
-    setLoading(false)
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      setError(data.error || 'Sign in failed')
+      setLoading(false)
+      return
+    }
+
+    // Set the session in Supabase client
+    if (data.session) {
+      await supabase.auth.setSession(data.session)
+    }
+
+    // Redirect based on role
+    router.push(data.redirectTo || '/log')
   }
 
   return (
@@ -52,48 +66,31 @@ export default function LoginPage() {
         {/* Card */}
         <div className="glass rounded-3xl p-6 shadow-2xl">
           <h2 className="text-white font-bold text-xl mb-5">Sign In</h2>
-
-          {sent ? (
-            <div className="space-y-4">
-              <div className="bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
-                <p className="text-green-400 text-sm font-medium">✓ Check your email!</p>
-                <p className="text-slate-400 text-xs mt-1">We sent a sign-in link to <strong>{email}</strong></p>
-              </div>
-              <p className="text-slate-400 text-xs">Click the link in the email to sign in to your account.</p>
-              <button
-                onClick={() => { setSent(false); setEmail(''); }}
-                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                Use a different email
-              </button>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:bg-blue-500/5 transition-all text-base placeholder-slate-600"
+                placeholder="your@email.com"
+              />
             </div>
-          ) : (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:bg-blue-500/5 transition-all text-base placeholder-slate-600"
-                  placeholder="your@email.com"
-                />
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-2.5">
+                <p className="text-red-400 text-sm">{error}</p>
               </div>
-              {error && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-2.5">
-                  <p className="text-red-400 text-sm">{error}</p>
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-blue w-full text-white font-bold rounded-xl py-3.5 text-base disabled:opacity-50 mt-2"
-              >
-                {loading ? '🐴 Sending link…' : 'Send Sign In Link →'}
-              </button>
-            </form>
-          )}
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-blue w-full text-white font-bold rounded-xl py-3.5 text-base disabled:opacity-50 mt-2"
+            >
+              {loading ? '🐴 Signing in…' : 'Let\'s Go Mustangs →'}
+            </button>
+          </form>
         </div>
 
         <p className="text-center text-slate-600 text-xs mt-6">Murrah High School · Jackson, MS</p>
