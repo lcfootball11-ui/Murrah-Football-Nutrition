@@ -1,27 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null)
   const router = useRouter()
-
-  useEffect(() => {
-    setSupabase(createClient())
-  }, [])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
-    if (!supabase) { setError('Loading...'); return }
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/auth/email-signin', {
+    const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -35,10 +28,9 @@ export default function LoginPage() {
       return
     }
 
-    // Set session if provided
-    if (data.session) {
-      await supabase.auth.setSession(data.session)
-    }
+    // Store email in localStorage for session
+    localStorage.setItem('userEmail', email)
+    localStorage.setItem('userId', data.userId)
 
     // Redirect
     router.push(data.redirectTo || '/log')
