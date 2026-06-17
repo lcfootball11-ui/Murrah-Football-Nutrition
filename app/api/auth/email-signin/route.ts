@@ -45,19 +45,29 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Create a session directly using admin privileges
-    const { data: { session }, error: sessionError } = await admin.auth.admin.createSession(user.id)
+    // Generate a magic link
+    const { data, error: linkError } = await admin.auth.admin.generateLink({
+      type: 'magiclink',
+      email,
+      options: {
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify`,
+      },
+    })
 
-    if (sessionError) {
-      return NextResponse.json({ error: sessionError.message }, { status: 400 })
+    if (linkError) {
+      return NextResponse.json({ error: linkError.message }, { status: 400 })
     }
+
+    // Extract token from the link URL
+    const linkUrl = new URL(data.properties?.action_link || '')
+    const token = linkUrl.searchParams.get('token_hash')
 
     // Get user profile to determine redirect
     const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
 
     return NextResponse.json({
       success: true,
-      session,
+      token,
       redirectTo: profile?.role === 'coach' ? '/dashboard' : '/log',
     })
   } catch (error: any) {
