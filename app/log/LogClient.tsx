@@ -267,7 +267,7 @@ export default function LogClient({
   return (
     <div className="min-h-screen mustang-gradient text-white pb-28 relative">
       {/* Right side panel with rotating player photos */}
-      <div className="hidden lg:fixed lg:right-0 lg:top-0 lg:bottom-0 lg:w-80 lg:z-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:overflow-hidden">
+      <div className="hidden lg:fixed lg:right-0 lg:top-0 lg:bottom-0 lg:w-64 xl:w-80 2xl:w-96 lg:z-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:overflow-hidden">
         <div className="relative w-full h-full">
           {photos.map((photo, i) => (
             <div
