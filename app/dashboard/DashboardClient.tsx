@@ -36,8 +36,10 @@ export default function DashboardClient({
   const router = useRouter()
   const [expanded, setExpanded] = useState<string | null>(null)
   const [showAddAthlete, setShowAddAthlete] = useState(false)
+  const [showAddCoach, setShowAddCoach] = useState(false)
   const [showSetTargets, setShowSetTargets] = useState<string | null>(null)
   const [newAthlete, setNewAthlete] = useState({ full_name: '', email: '', password: '', plan: 'gain' as 'gain' | 'loss' })
+  const [newCoach, setNewCoach] = useState({ full_name: '', email: '', password: '' })
   const [targetForm, setTargetForm] = useState({ calories: '', protein: '', carbs: '', fat: '', supplements: '', plan: 'gain' as 'gain' | 'loss', target_weight: '', goal_weight: '' })
   const [saving, setSaving] = useState(false)
   const [, startTransition] = useTransition()
@@ -58,6 +60,25 @@ export default function DashboardClient({
   async function signOut() {
     await supabase.auth.signOut()
     startTransition(() => router.push('/login'))
+  }
+
+  async function addCoach() {
+    if (!newCoach.email || !newCoach.password || !newCoach.full_name) return
+    setSaving(true)
+    const res = await fetch('/api/admin/create-coach', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newCoach),
+    })
+    setSaving(false)
+    if (res.ok) {
+      setShowAddCoach(false)
+      setNewCoach({ full_name: '', email: '', password: '' })
+      router.refresh()
+    } else {
+      const err = await res.json()
+      alert(err.error ?? 'Failed to create coach')
+    }
   }
 
   async function addAthlete() {
@@ -204,12 +225,20 @@ export default function DashboardClient({
             <Users size={15} className="text-slate-400" />
             <p className="text-sm font-bold text-slate-300 uppercase tracking-wide">Roster</p>
           </div>
-          <button
-            onClick={() => setShowAddAthlete(true)}
-            className="btn-blue flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-2 rounded-xl"
-          >
-            <Plus size={13} /> Add Athlete
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAddCoach(true)}
+              className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 px-3.5 py-2 rounded-xl glass"
+            >
+              <Plus size={13} /> Invite Coach
+            </button>
+            <button
+              onClick={() => setShowAddAthlete(true)}
+              className="btn-blue flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-2 rounded-xl"
+            >
+              <Plus size={13} /> Add Athlete
+            </button>
+          </div>
         </div>
 
         {athletes.length === 0 && (
@@ -343,6 +372,37 @@ export default function DashboardClient({
           )
         })}
       </div>
+
+      {/* Add Coach Modal */}
+      {showAddCoach && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end" onClick={e => e.target === e.currentTarget && setShowAddCoach(false)}>
+          <div className="w-full rounded-t-3xl p-5 space-y-4 animate-slide-up" style={{ background: '#0d1433', border: '1px solid rgba(59,130,246,0.2)', borderBottom: 'none' }}>
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto" />
+            <div className="flex justify-between items-center">
+              <h3 className="font-black text-xl">Invite Coach 👨‍💼</h3>
+              <button onClick={() => setShowAddCoach(false)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
+            </div>
+            {[
+              { key: 'full_name', label: 'Full Name', type: 'text', placeholder: 'Coach Name' },
+              { key: 'email', label: 'Email', type: 'email', placeholder: 'coach@example.com' },
+              { key: 'password', label: 'Temp Password', type: 'password', placeholder: '••••••••' },
+            ].map(({ key, label, type, placeholder }) => (
+              <div key={key}>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</label>
+                <input
+                  type={type} placeholder={placeholder}
+                  value={newCoach[key as keyof typeof newCoach]}
+                  onChange={e => setNewCoach(p => ({ ...p, [key]: e.target.value }))}
+                  className="w-full mt-1.5 glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500/50 placeholder-slate-600"
+                />
+              </div>
+            ))}
+            <button onClick={addCoach} disabled={saving} className="w-full py-3.5 rounded-2xl btn-blue disabled:opacity-50 text-white font-bold">
+              {saving ? 'Inviting…' : 'Invite Coach ✓'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Add Athlete Modal */}
       {showAddAthlete && (
