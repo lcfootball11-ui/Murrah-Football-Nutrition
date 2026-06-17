@@ -39,7 +39,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-4xl font-black tracking-tight text-white">MURRAH</h1>
           <p className="shimmer-text text-lg font-bold tracking-widest mt-0.5">MUSTANGS</p>
-          <p className="text-slate-400 text-sm mt-2 font-medium">Fuel the Herd 💪</p>
+          <p className="text-slate-400 text-sm mt-2 font-medium">MustangUp 💪</p>
         </div>
 
         {/* Card */}
