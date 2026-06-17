@@ -3,7 +3,8 @@
 import { useState, useTransition, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target } from 'lucide-react'
+import Link from 'next/link'
+import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History } from 'lucide-react'
 
 type Athlete = { id: string; full_name: string }
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
@@ -374,25 +375,33 @@ export default function DashboardClient({
                     </div>
                   )}
 
-                  <button
-                    onClick={() => {
-                      const t = targets.find(x => x.user_id === athlete.id)
-                      setTargetForm({
-                        calories: String(t?.calories ?? ''),
-                        protein: String(t?.protein ?? ''),
-                        carbs: String(t?.carbs ?? ''),
-                        fat: String(t?.fat ?? ''),
-                        supplements: (t?.supplements ?? []).join(', '),
-                        plan: t?.plan ?? 'gain',
-                        target_weight: String(t?.target_weight ?? ''),
-                        goal_weight: String(t?.goal_weight ?? ''),
-                      })
-                      setShowSetTargets(athlete.id)
-                    }}
-                    className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    <Target size={12} /> Set / edit targets →
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/dashboard/athlete/${athlete.id}`}
+                      className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <History size={12} /> View history →
+                    </Link>
+                    <button
+                      onClick={() => {
+                        const t = targets.find(x => x.user_id === athlete.id)
+                        setTargetForm({
+                          calories: String(t?.calories ?? ''),
+                          protein: String(t?.protein ?? ''),
+                          carbs: String(t?.carbs ?? ''),
+                          fat: String(t?.fat ?? ''),
+                          supplements: (t?.supplements ?? []).join(', '),
+                          plan: t?.plan ?? 'gain',
+                          target_weight: String(t?.target_weight ?? ''),
+                          goal_weight: String(t?.goal_weight ?? ''),
+                        })
+                        setShowSetTargets(athlete.id)
+                      }}
+                      className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <Target size={12} /> Set targets →
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
