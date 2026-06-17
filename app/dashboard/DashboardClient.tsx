@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History } from 'lucide-react'
 
-type Athlete = { id: string; full_name: string }
+type Athlete = { id: string; full_name: string; phone_number?: string | null; reminder_enabled?: boolean }
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
 type SuppLog = { user_id: string; supplement_name: string; taken: boolean }
 type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[]; plan: 'gain' | 'loss'; target_weight?: number; goal_weight?: number }
@@ -39,10 +39,13 @@ export default function DashboardClient({
   const [showAddCoach, setShowAddCoach] = useState(false)
   const [showSetTargets, setShowSetTargets] = useState<string | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
-  const [newAthlete, setNewAthlete] = useState({ full_name: '', email: '', password: '', plan: 'gain' as 'gain' | 'loss' })
+  const [newAthlete, setNewAthlete] = useState({ full_name: '', email: '', password: '', phone_number: '', plan: 'gain' as 'gain' | 'loss' })
   const [newCoach, setNewCoach] = useState({ full_name: '', email: '', password: '' })
   const [targetForm, setTargetForm] = useState({ calories: '', protein: '', carbs: '', fat: '', supplements: '', plan: 'gain' as 'gain' | 'loss', target_weight: '', goal_weight: '' })
   const [saving, setSaving] = useState(false)
+  const [athletePhones, setAthletePhones] = useState<Record<string, string>>({})
+  const [editingPhoneId, setEditingPhoneId] = useState<string | null>(null)
+  const [reminderToggles, setReminderToggles] = useState<Record<string, boolean>>({})
   const [, startTransition] = useTransition()
   const [photoIndex, setPhotoIndex] = useState(0)
   const photoList = [
@@ -60,6 +63,17 @@ export default function DashboardClient({
     const interval = setInterval(() => setPhotoIndex(i => (i + 1) % shuffled.length), 8000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    const phones: Record<string, string> = {}
+    const reminders: Record<string, boolean> = {}
+    athletes.forEach(a => {
+      phones[a.id] = a.phone_number || ''
+      reminders[a.id] = a.reminder_enabled !== false
+    })
+    setAthletePhones(phones)
+    setReminderToggles(reminders)
+  }, [athletes])
 
   async function signOut() {
     await supabase.auth.signOut()
@@ -108,7 +122,7 @@ export default function DashboardClient({
         })
       }
       setShowAddAthlete(false)
-      setNewAthlete({ full_name: '', email: '', password: '', plan: 'gain' })
+      setNewAthlete({ full_name: '', email: '', password: '', phone_number: '', plan: 'gain' })
       router.refresh()
     } else {
       const err = await res.json()
@@ -155,6 +169,38 @@ export default function DashboardClient({
     setSaving(false)
     if (res.ok) { setShowSetTargets(null); router.refresh() }
     else { const err = await res.json(); alert(err.error ?? 'Failed to save targets') }
+  }
+
+  async function updateAthletePhone(athleteId: string, phoneNumber: string) {
+    setSaving(true)
+    const res = await fetch('/api/admin/update-athlete-phone', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ athlete_id: athleteId, phone_number: phoneNumber, coach_secret: 'MurrahFootballCover3$ky!Coach' }),
+    })
+    setSaving(false)
+    if (res.ok) {
+      setEditingPhoneId(null)
+      router.refresh()
+    } else {
+      const err = await res.json()
+      alert(err.error ?? 'Failed to update phone number')
+    }
+  }
+
+  async function updateReminderToggle(athleteId: string, enabled: boolean) {
+    setSaving(true)
+    const res = await fetch('/api/admin/update-athlete-reminders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ athlete_id: athleteId, reminder_enabled: enabled, coach_secret: 'MurrahFootballCover3$ky!Coach' }),
+    })
+    setSaving(false)
+    if (!res.ok) {
+      const err = await res.json()
+      alert(err.error ?? 'Failed to update reminder settings')
+      router.refresh()
+    }
   }
 
   const totalLogged = athletes.filter(a => logs.some(l => l.user_id === a.id)).length
@@ -377,6 +423,67 @@ export default function DashboardClient({
                     </div>
                   )}
 
+                  <div className="space-y-3 border-t border-white/5 pt-3">
+                    <div>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Phone & Reminders</p>
+                      <div className="glass rounded-xl p-3 space-y-2">
+                        {editingPhoneId === athlete.id ? (
+                          <div className="flex gap-2">
+                            <input
+                              type="tel"
+                              value={athletePhones[athlete.id]}
+                              onChange={(e) => setAthletePhones({ ...athletePhones, [athlete.id]: e.target.value })}
+                              placeholder="(555) 123-4567"
+                              className="flex-1 glass border border-white/10 text-white rounded-lg px-3 py-2 text-xs outline-none focus:border-blue-500/50"
+                            />
+                            <button
+                              onClick={() => updateAthletePhone(athlete.id, athletePhones[athlete.id])}
+                              disabled={saving}
+                              className="px-3 py-2 rounded-lg btn-blue text-xs font-bold disabled:opacity-50"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => setEditingPhoneId(null)}
+                              className="px-3 py-2 rounded-lg glass text-xs font-bold text-slate-400 hover:text-slate-200"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs text-slate-400">Phone Number</p>
+                              <p className="text-sm font-bold text-white">{athletePhones[athlete.id] || '—'}</p>
+                            </div>
+                            <button
+                              onClick={() => setEditingPhoneId(athlete.id)}
+                              className="text-xs font-bold text-blue-400 hover:text-blue-300"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                          <div>
+                            <p className="text-xs text-slate-400">Send Reminders</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Text at 9:30pm, 10pm, 10:30pm if below 50% goal</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const newValue = !reminderToggles[athlete.id]
+                              setReminderToggles({ ...reminderToggles, [athlete.id]: newValue })
+                              updateReminderToggle(athlete.id, newValue)
+                            }}
+                            className={`relative w-10 h-6 rounded-full transition-colors ${reminderToggles[athlete.id] ? 'btn-blue' : 'glass'}`}
+                          >
+                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${reminderToggles[athlete.id] ? 'translate-x-5' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-3">
                     <a
                       href={`/dashboard/athlete/${athlete.id}`}
@@ -503,6 +610,7 @@ export default function DashboardClient({
             {[
               { key: 'full_name', label: 'Full Name', type: 'text', placeholder: 'John Smith' },
               { key: 'email', label: 'Email', type: 'email', placeholder: 'john@example.com' },
+              { key: 'phone_number', label: 'Phone Number', type: 'tel', placeholder: '(555) 123-4567' },
               { key: 'password', label: 'Temp Password', type: 'password', placeholder: '••••••••' },
             ].map(({ key, label, type, placeholder }) => (
               <div key={key}>

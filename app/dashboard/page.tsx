@@ -33,7 +33,7 @@ export default async function DashboardPage() {
 
   const { data: athletes } = await admin
     .from('profiles')
-    .select('id, full_name')
+    .select('id, full_name, phone_number, reminder_enabled')
     .eq('role', 'athlete')
     .order('full_name')
 

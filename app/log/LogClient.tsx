@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame } from 'lucide-react'
+import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings } from 'lucide-react'
 
 type FoodResult = {
   fdcId: number
@@ -37,6 +37,7 @@ type Profile = {
   id: string
   full_name: string
   role: string
+  phone_number?: string | null
 }
 
 type Targets = {
@@ -128,6 +129,9 @@ export default function LogClient({
     'IMG_9094.jpeg', 'IMG_9096.jpeg', 'IMG_9097.jpeg'
   ]
   const [photos, setPhotos] = useState(photoList)
+  const [showSettings, setShowSettings] = useState(false)
+  const [phoneNumber, setPhoneNumber] = useState(profile.phone_number || '')
+  const [savingPhone, setSavingPhone] = useState(false)
   useEffect(() => {
     const shuffled = [...photoList].sort(() => Math.random() - 0.5)
     setPhotos(shuffled)
@@ -260,6 +264,21 @@ export default function LogClient({
     startTransition(() => router.push('/login'))
   }
 
+  async function savePhoneNumber() {
+    setSavingPhone(true)
+    const res = await fetch('/api/athlete/update-phone', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber }),
+    })
+    setSavingPhone(false)
+    if (res.ok) {
+      setShowSettings(false)
+    } else {
+      alert('Failed to save phone number')
+    }
+  }
+
   const supplements: string[] = targets?.supplements ?? []
   const firstName = profile.full_name.split(' ')[0]
 
@@ -331,9 +350,14 @@ export default function LogClient({
               <p className="text-xs font-bold text-blue-300 leading-none mt-0.5">🔥 day{streak !== 1 ? 's' : ''}</p>
             </div>
           )}
-          <button onClick={signOut} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors mt-1">
-            <LogOut size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowSettings(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
+              <Settings size={18} />
+            </button>
+            <button onClick={signOut} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
+              <LogOut size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Calorie hero bar */}
@@ -686,6 +710,37 @@ export default function LogClient({
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end" onClick={() => setShowSettings(false)}>
+          <div className="w-full rounded-t-3xl p-5 space-y-4 animate-slide-up" style={{ background: '#0d1433', border: '1px solid rgba(59,130,246,0.2)', borderBottom: 'none' }}>
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto" />
+            <div className="flex justify-between items-center">
+              <h3 className="font-black text-xl flex items-center gap-2"><Settings size={20} className="text-blue-400" /> Settings</h3>
+              <button onClick={() => setShowSettings(false)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2">Phone Number for Reminders</label>
+              <p className="text-xs text-slate-500 mb-2">Coaches will send you nutrition reminders if you fall below 50% of your daily goals</p>
+              <input
+                type="tel"
+                placeholder="(123) 456-7890"
+                value={phoneNumber}
+                onChange={e => setPhoneNumber(e.target.value)}
+                className="w-full glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500/50 placeholder-slate-600"
+              />
+            </div>
+            <button
+              onClick={savePhoneNumber}
+              disabled={savingPhone || !phoneNumber}
+              className="w-full py-3.5 rounded-2xl btn-blue disabled:opacity-50 text-white font-bold"
+            >
+              {savingPhone ? 'Saving…' : 'Save Phone Number ✓'}
+            </button>
           </div>
         </div>
       )}
