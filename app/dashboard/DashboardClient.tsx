@@ -159,10 +159,10 @@ export default function DashboardClient({
 
   return (
     <div className="min-h-screen mustang-gradient text-white pb-10 relative">
-      {/* Left side panel with vertically stacked images - Mobile bottom, Desktop left */}
-      <div className="flex lg:hidden fixed bottom-0 left-0 right-0 h-48 lg:fixed lg:left-0 lg:top-[300px] lg:bottom-0 lg:h-auto lg:right-auto lg:w-64 xl:w-80 2xl:w-96 lg:flex-col lg:overflow-hidden z-10">
+      {/* Left side panel with vertically stacked images - Desktop left, hidden on mobile */}
+      <div className="hidden lg:fixed lg:left-0 lg:top-[300px] lg:bottom-0 lg:w-64 xl:w-80 2xl:w-96 lg:z-0 lg:flex lg:flex-col lg:overflow-hidden">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="flex-1 border-r lg:border-r-0 lg:border-b border-[#1a2844] relative overflow-hidden">
+          <div key={i} className="flex-1 border-b border-[#1a2844] relative overflow-hidden">
             {i === 0 && (
               <>
                 <img
@@ -177,8 +177,8 @@ export default function DashboardClient({
         ))}
       </div>
 
-      {/* Right side panel with rotating player photos - Mobile bottom, Desktop right */}
-      <div className="flex lg:hidden fixed bottom-0 left-0 right-0 h-48 lg:fixed lg:right-0 lg:top-0 lg:bottom-0 lg:h-auto lg:left-auto lg:w-64 xl:w-80 2xl:w-96 lg:flex-col lg:items-center lg:justify-center lg:overflow-hidden z-10">
+      {/* Right side panel with rotating player photos - Desktop right, hidden on mobile */}
+      <div className="hidden lg:fixed lg:right-0 lg:top-0 lg:bottom-0 lg:w-64 xl:w-80 2xl:w-96 lg:z-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:overflow-hidden">
         <div className="relative w-full h-full">
           {photos.map((photo, i) => (
             <div
@@ -194,6 +194,36 @@ export default function DashboardClient({
               <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#08091a] via-[#08091a]/40" />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Mobile bottom picture bar - only shows on small screens */}
+      <div className="flex lg:hidden fixed bottom-0 left-0 right-0 h-48 z-10">
+        <div className="flex-1 relative overflow-hidden border-r border-[#1a2844]">
+          <img
+            src="/PigandPint.jpg"
+            alt="Murrah"
+            className="w-full h-full object-contain"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#08091a] to-transparent" />
+        </div>
+        <div className="flex-1 relative overflow-hidden">
+          <div className="relative w-full h-full">
+            {photos.map((photo, i) => (
+              <div
+                key={photo}
+                className="absolute inset-0 transition-opacity duration-1000"
+                style={{ opacity: i === photoIndex ? 1 : 0 }}
+              >
+                <img
+                  src={`/${photo}`}
+                  alt="Murrah Mustang"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#08091a] via-[#08091a]/40" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
