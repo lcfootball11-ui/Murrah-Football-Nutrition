@@ -376,7 +376,12 @@ export default function DashboardClient({
 
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => router.push(`/dashboard/athlete/${athlete.id}`)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        console.log('View history clicked for athlete:', athlete.id, athlete.full_name)
+                        router.push(`/dashboard/athlete/${athlete.id}`)
+                      }}
                       className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
                     >
                       <History size={12} /> View history →
