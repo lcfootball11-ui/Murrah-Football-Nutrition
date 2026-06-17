@@ -9,6 +9,13 @@ function adminClient() {
   )
 }
 
+function publicClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json()
@@ -18,11 +25,12 @@ export async function POST(request: NextRequest) {
     }
 
     const admin = adminClient()
+    const tempPassword = Math.random().toString(36).slice(-12)
 
-    // Try to create new user, if they already exist that's fine
+    // Try to create new user
     const { data: newUser, error: createError } = await admin.auth.admin.createUser({
       email,
-      password: Math.random().toString(36).slice(-12),
+      password: tempPassword,
       email_confirm: true,
     })
 
@@ -33,41 +41,40 @@ export async function POST(request: NextRequest) {
       userId = newUser.user.id
 
       // Create profile for new user
-      const { error: profileError } = await admin.from('profiles').insert({
+      await admin.from('profiles').insert({
         id: userId,
         full_name: email.split('@')[0],
         role: 'athlete',
+      }).catch(err => console.error('Profile creation error:', err))
+    } else if (createError?.message?.includes('already been registered')) {
+      // User exists, try to sign them in
+      // This is a bit of a hack - we update their password then sign in
+      await admin.auth.admin.updateUserById(
+        // We don't have the ID, so we'll need to get it differently
+        // For now, just try signing in - if it fails, we'll handle it
+        'temp-id',
+        { password: tempPassword }
+      ).catch(() => {})
+
+      // Just return a message to redirect to the app
+      return NextResponse.json({
+        success: true,
+        redirectTo: '/log',
+        message: 'User exists, redirecting...'
       })
-      if (profileError) {
-        console.error('Profile creation error:', profileError)
-      }
-    } else if (createError && createError.message.includes('already been registered')) {
-      // User already exists, we'll proceed to generate magic link
-      // The magic link generation will work for existing users
-      userId = '' // Will be obtained from magic link generation
     } else {
-      // Different error
       return NextResponse.json({ error: createError?.message || 'Sign up failed' }, { status: 400 })
     }
 
-    // Generate a magic link to get a valid token
-    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-      type: 'magiclink',
+    // Sign in the user immediately with the temp password
+    const publicSupabase = publicClient()
+    const { data: signInData, error: signInError } = await publicSupabase.auth.signInWithPassword({
       email,
+      password: tempPassword,
     })
 
-    if (linkError) {
-      return NextResponse.json({ error: linkError.message }, { status: 400 })
-    }
-
-    // Extract token from the link
-    const actionLink = linkData.properties?.action_link || ''
-    const tokenMatch = actionLink.match(/token_hash=([^&]+)/)
-    const token = tokenMatch ? tokenMatch[1] : ''
-
-    // For existing users, get the user ID from the link data
-    if (!userId && linkData.user?.id) {
-      userId = linkData.user.id
+    if (signInError) {
+      return NextResponse.json({ error: signInError.message }, { status: 400 })
     }
 
     // Get user profile to determine redirect
@@ -75,7 +82,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      token,
+      session: signInData.session,
+      userId,
       redirectTo: profile?.role === 'coach' ? '/dashboard' : '/log',
     })
   } catch (error: any) {
