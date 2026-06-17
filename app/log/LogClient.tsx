@@ -119,6 +119,18 @@ export default function LogClient({
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [manual, setManual] = useState({ meal_name: '', calories: '', protein: '', carbs: '', fat: '' })
   const [, startTransition] = useTransition()
+  const [photoIndex, setPhotoIndex] = useState(0)
+  const photos = [
+    'IMG_9077.jpeg', 'IMG_9079.jpeg', 'IMG_9080.jpeg', 'IMG_9081.jpeg',
+    'IMG_9082.jpeg', 'IMG_9083.jpeg', 'IMG_9084.jpeg', 'IMG_9085.jpeg',
+    'IMG_9086.jpeg', 'IMG_9087.jpeg', 'IMG_9088.jpeg', 'IMG_9089.jpeg',
+    'IMG_9090.jpeg', 'IMG_9091.jpeg', 'IMG_9092.jpeg', 'IMG_9093.jpeg',
+    'IMG_9094.jpeg', 'IMG_9096.jpeg', 'IMG_9097.jpeg'
+  ]
+  useEffect(() => {
+    const interval = setInterval(() => setPhotoIndex(i => (i + 1) % photos.length), 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   const totals = logs.reduce(
     (acc, l) => ({ calories: acc.calories + l.calories, protein: acc.protein + l.protein, carbs: acc.carbs + l.carbs, fat: acc.fat + l.fat }),
@@ -253,7 +265,26 @@ export default function LogClient({
     : new Date(activeDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 
   return (
-    <div className="min-h-screen mustang-gradient text-white pb-28">
+    <div className="min-h-screen mustang-gradient text-white pb-28 relative">
+      {/* Right side panel with rotating player photos */}
+      <div className="hidden lg:fixed lg:right-0 lg:top-0 lg:bottom-0 lg:w-64 lg:z-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:overflow-hidden">
+        <div className="relative w-full h-full">
+          {photos.map((photo, i) => (
+            <div
+              key={photo}
+              className="absolute inset-0 transition-opacity duration-1000"
+              style={{ opacity: i === photoIndex ? 1 : 0 }}
+            >
+              <img
+                src={`/${photo}`}
+                alt="Murrah Mustang"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#08091a] via-[#08091a]/40" />
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Header */}
       <div className="relative overflow-hidden">

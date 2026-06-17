@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target } from 'lucide-react'
@@ -41,6 +41,19 @@ export default function DashboardClient({
   const [targetForm, setTargetForm] = useState({ calories: '', protein: '', carbs: '', fat: '', supplements: '', plan: 'gain' as 'gain' | 'loss' })
   const [saving, setSaving] = useState(false)
   const [, startTransition] = useTransition()
+  const [photoIndex, setPhotoIndex] = useState(0)
+  const photos = [
+    'IMG_9077.jpeg', 'IMG_9079.jpeg', 'IMG_9080.jpeg', 'IMG_9081.jpeg',
+    'IMG_9082.jpeg', 'IMG_9083.jpeg', 'IMG_9084.jpeg', 'IMG_9085.jpeg',
+    'IMG_9086.jpeg', 'IMG_9087.jpeg', 'IMG_9088.jpeg', 'IMG_9089.jpeg',
+    'IMG_9090.jpeg', 'IMG_9091.jpeg', 'IMG_9092.jpeg', 'IMG_9093.jpeg',
+    'IMG_9094.jpeg', 'IMG_9096.jpeg', 'IMG_9097.jpeg'
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => setPhotoIndex(i => (i + 1) % photos.length), 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   async function signOut() {
     await supabase.auth.signOut()
@@ -104,7 +117,26 @@ export default function DashboardClient({
   const compliancePct = athletes.length > 0 ? Math.round((totalLogged / athletes.length) * 100) : 0
 
   return (
-    <div className="min-h-screen mustang-gradient text-white pb-10">
+    <div className="min-h-screen mustang-gradient text-white pb-10 relative">
+      {/* Right side panel with rotating player photos */}
+      <div className="hidden lg:fixed lg:right-0 lg:top-0 lg:bottom-0 lg:w-64 lg:z-0 lg:flex lg:flex-col lg:items-center lg:justify-center lg:overflow-hidden">
+        <div className="relative w-full h-full">
+          {photos.map((photo, i) => (
+            <div
+              key={photo}
+              className="absolute inset-0 transition-opacity duration-1000"
+              style={{ opacity: i === photoIndex ? 1 : 0 }}
+            >
+              <img
+                src={`/${photo}`}
+                alt="Murrah Mustang"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#08091a] via-[#08091a]/40" />
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Header */}
       <div className="relative overflow-hidden">
