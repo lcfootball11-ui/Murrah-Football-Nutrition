@@ -36,19 +36,20 @@ export async function POST(request: NextRequest) {
       // New user was created
       userId = newUser.user.id
       // Create profile for new user
-      await admin.from('profiles').insert({
+      const { error: profileError } = await admin.from('profiles').insert({
         id: userId,
         full_name: email.split('@')[0],
         role: 'athlete',
-      }).then().catch(err => console.error('Profile creation error:', err))
+      })
+      if (profileError) {
+        console.error('Profile creation error:', profileError)
+      }
     } else {
       // User already exists, get their ID by generating a magic link then extracting it
-      // We'll get the user ID from the magic link generation
       const tempLink = await admin.auth.admin.generateLink({
         type: 'magiclink',
         email,
       })
-      // The link generation will have the user ID embedded
       userId = tempLink.data?.user?.id || ''
       if (!userId) {
         return NextResponse.json({ error: 'Could not determine user ID' }, { status: 400 })
