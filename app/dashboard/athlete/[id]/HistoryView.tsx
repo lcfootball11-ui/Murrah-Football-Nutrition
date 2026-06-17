@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface Log {
   id: string
@@ -37,6 +37,7 @@ export default function HistoryView({
 }) {
   const router = useRouter()
   const [view, setView] = useState('month')
+  const [selectedDate, setSelectedDate] = useState(new Date())
 
   const calTarget = targets?.calories ?? 2500
   const proTarget = targets?.protein ?? 150
@@ -48,14 +49,36 @@ export default function HistoryView({
 
   // Filter dates based on view
   const getFilteredDates = () => {
-    const now = new Date()
     if (view === 'week') {
+      const now = new Date()
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
       return allDates.filter(d => new Date(d) >= weekAgo)
     } else {
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-      return allDates.filter(d => new Date(d) >= monthAgo)
+      // Month view - filter to selected month
+      const year = selectedDate.getFullYear()
+      const month = selectedDate.getMonth()
+      return allDates.filter(d => {
+        const date = new Date(d + 'T00:00:00')
+        return date.getFullYear() === year && date.getMonth() === month
+      })
     }
+  }
+
+  const goToPreviousMonth = () => {
+    setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1))
+  }
+
+  const goToNextMonth = () => {
+    setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1))
+  }
+
+  const goToThisMonth = () => {
+    const now = new Date()
+    setSelectedDate(new Date(now.getFullYear(), now.getMonth(), 1))
+  }
+
+  const formatMonthYear = (date: Date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
   }
 
   const filteredDates = getFilteredDates()
@@ -111,7 +134,7 @@ export default function HistoryView({
           </div>
 
           {/* View toggle */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-3">
             <button
               onClick={() => setView('month')}
               className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${
@@ -133,6 +156,33 @@ export default function HistoryView({
               Week
             </button>
           </div>
+
+          {/* Month navigation */}
+          {view === 'month' && (
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={goToPreviousMonth}
+                className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <div className="text-center flex-1">
+                <p className="text-sm font-bold text-white">{formatMonthYear(selectedDate)}</p>
+              </div>
+              <button
+                onClick={goToNextMonth}
+                className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors"
+              >
+                <ChevronRight size={16} />
+              </button>
+              <button
+                onClick={goToThisMonth}
+                className="glass rounded-xl px-3 py-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap"
+              >
+                Today
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
