@@ -35,12 +35,16 @@ export default function LoginPage() {
       return
     }
 
-    // Use the token to verify and sign in
-    if (data.token) {
-      router.push(`/auth/verify?token=${data.token}&type=magiclink`)
-    } else {
-      router.push(data.redirectTo || '/log')
+    // Set session with access token
+    if (data.accessToken && data.userId) {
+      await supabase.auth.setSession({
+        access_token: data.accessToken,
+        refresh_token: '',
+      })
     }
+
+    // Redirect
+    router.push(data.redirectTo || '/log')
   }
 
   return (

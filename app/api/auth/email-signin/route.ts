@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { jwtVerify, SignJWT } from 'jose'
 
 function adminClient() {
   return createClient(
@@ -7,6 +8,21 @@ function adminClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
+}
+
+async function generateSupabaseJWT(userId: string) {
+  const secret = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET || '')
+
+  const jwt = await new SignJWT({
+    sub: userId,
+    aud: 'authenticated',
+    role: 'authenticated',
+  })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('24h')
+    .sign(secret)
+
+  return jwt
 }
 
 export async function POST(request: NextRequest) {
@@ -19,22 +35,27 @@ export async function POST(request: NextRequest) {
 
     const admin = adminClient()
 
-    // Try to create new user, if they exist already that's fine
-    const { data: newUser, error: createError } = await admin.auth.admin.createUser({
-      email,
-      password: Math.random().toString(36).slice(-12),
-      email_confirm: true,
-    })
+    // Try to get existing user by email
+    const { data: existingUser } = await admin.auth.admin.getUserByEmail(email)
 
     let userId: string
 
-    if (createError && !createError.message.includes('already been registered')) {
-      return NextResponse.json({ error: createError.message }, { status: 400 })
-    }
+    if (existingUser?.id) {
+      userId = existingUser.id
+    } else {
+      // Create new user
+      const { data: newUser, error: createError } = await admin.auth.admin.createUser({
+        email,
+        password: Math.random().toString(36).slice(-12),
+        email_confirm: true,
+      })
 
-    if (newUser?.user) {
-      // New user was created
+      if (createError) {
+        return NextResponse.json({ error: createError.message }, { status: 400 })
+      }
+
       userId = newUser.user.id
+
       // Create profile for new user
       const { error: profileError } = await admin.from('profiles').insert({
         id: userId,
@@ -44,41 +65,18 @@ export async function POST(request: NextRequest) {
       if (profileError) {
         console.error('Profile creation error:', profileError)
       }
-    } else {
-      // User already exists, get their ID by generating a magic link then extracting it
-      const tempLink = await admin.auth.admin.generateLink({
-        type: 'magiclink',
-        email,
-      })
-      userId = tempLink.data?.user?.id || ''
-      if (!userId) {
-        return NextResponse.json({ error: 'Could not determine user ID' }, { status: 400 })
-      }
     }
-
-    // Generate a magic link
-    const { data, error: linkError } = await admin.auth.admin.generateLink({
-      type: 'magiclink',
-      email,
-      options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify`,
-      },
-    })
-
-    if (linkError) {
-      return NextResponse.json({ error: linkError.message }, { status: 400 })
-    }
-
-    // Extract token from the link URL
-    const linkUrl = new URL(data.properties?.action_link || '')
-    const token = linkUrl.searchParams.get('token_hash')
 
     // Get user profile to determine redirect
     const { data: profile } = await admin.from('profiles').select('role').eq('id', userId).single()
 
+    // Generate JWT token
+    const accessToken = await generateSupabaseJWT(userId)
+
     return NextResponse.json({
       success: true,
-      token,
+      accessToken,
+      userId,
       redirectTo: profile?.role === 'coach' ? '/dashboard' : '/log',
     })
   } catch (error: any) {
