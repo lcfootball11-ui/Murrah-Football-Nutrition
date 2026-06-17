@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { SNSClient, PublishCommand } from '@aws-sdk/client-sns'
-
-const snsClient = new SNSClient({
-  region: 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-})
+import twilio from 'twilio'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,18 +9,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing phone number or message' }, { status: 400 })
     }
 
-    // Format phone number to E.164 format (e.g., +1234567890)
+    // Check for Twilio credentials
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
+      return NextResponse.json({ error: 'Twilio not configured' }, { status: 500 })
+    }
+
+    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+
+    // Format phone number to E.164 format
     const formattedPhone = phoneNumber.replace(/\D/g, '')
     const e164Phone = formattedPhone.startsWith('1') ? `+${formattedPhone}` : `+1${formattedPhone}`
 
-    const command = new PublishCommand({
-      Message: message,
-      PhoneNumber: e164Phone,
+    const response = await client.messages.create({
+      body: message,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: e164Phone,
     })
 
-    await snsClient.send(command)
-
-    return NextResponse.json({ success: true, message: 'SMS sent successfully' })
+    return NextResponse.json({ success: true, messageId: response.sid })
   } catch (error) {
     console.error('SMS send error:', error)
     return NextResponse.json({ error: 'Failed to send SMS' }, { status: 500 })

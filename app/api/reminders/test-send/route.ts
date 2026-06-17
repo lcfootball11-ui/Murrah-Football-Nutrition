@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { SNSClient, PublishCommand } from '@aws-sdk/client-sns'
+import twilio from 'twilio'
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,44 +9,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'phoneNumber and message required' }, { status: 400 })
     }
 
-    // Check for AWS credentials
-    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+    // Check for Twilio credentials
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
       return NextResponse.json(
-        { error: 'AWS credentials not configured. Add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to Vercel environment variables.' },
+        { error: 'Twilio credentials not configured. Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER to environment variables.' },
         { status: 500 }
       )
     }
 
-    const snsClient = new SNSClient({
-      region: 'us-east-1',
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      },
-    })
+    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
 
     // Format phone number to E.164 format
     const formattedNumber = phoneNumber.startsWith('+') ? phoneNumber : `+1${phoneNumber.replace(/\D/g, '')}`
 
-    console.log('Sending SMS:', {
+    console.log('Sending SMS via Twilio:', {
       to: formattedNumber,
       message,
       timestamp: new Date().toISOString(),
     })
 
-    const params = {
-      Message: message,
-      PhoneNumber: formattedNumber,
-    }
+    const response = await client.messages.create({
+      body: message,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: formattedNumber,
+    })
 
-    const command = new PublishCommand(params)
-    const response = await snsClient.send(command)
-
-    console.log('SNS Response:', response)
+    console.log('Twilio Response:', response.sid)
 
     return NextResponse.json({
       success: true,
-      messageId: response.MessageId,
+      messageId: response.sid,
       phoneNumber: formattedNumber,
       message,
     })
