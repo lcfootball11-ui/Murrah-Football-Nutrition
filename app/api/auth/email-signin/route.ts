@@ -19,30 +19,40 @@ export async function POST(request: NextRequest) {
 
     const admin = adminClient()
 
-    // Check if user exists
-    const { data: { users = [] } } = await admin.auth.admin.listUsers()
-    let user = users.find(u => u.email === email)
+    // Try to create new user, if they exist already that's fine
+    const { data: newUser, error: createError } = await admin.auth.admin.createUser({
+      email,
+      password: Math.random().toString(36).slice(-12),
+      email_confirm: true,
+    })
 
-    if (!user) {
-      // Create new user with random password
-      const { data: newUser, error: createError } = await admin.auth.admin.createUser({
-        email,
-        password: Math.random().toString(36).slice(-12),
-        email_confirm: true,
-      })
+    let userId: string
 
-      if (createError) {
-        return NextResponse.json({ error: createError.message }, { status: 400 })
-      }
+    if (createError && !createError.message.includes('already exists')) {
+      return NextResponse.json({ error: createError.message }, { status: 400 })
+    }
 
-      user = newUser.user
-
+    if (newUser?.user) {
+      // New user was created
+      userId = newUser.user.id
       // Create profile for new user
       await admin.from('profiles').insert({
-        id: user.id,
+        id: userId,
         full_name: email.split('@')[0],
         role: 'athlete',
+      }).then().catch(err => console.error('Profile creation error:', err))
+    } else {
+      // User already exists, get their ID by generating a magic link then extracting it
+      // We'll get the user ID from the magic link generation
+      const tempLink = await admin.auth.admin.generateLink({
+        type: 'magiclink',
+        email,
       })
+      // The link generation will have the user ID embedded
+      userId = tempLink.data?.user?.id || ''
+      if (!userId) {
+        return NextResponse.json({ error: 'Could not determine user ID' }, { status: 400 })
+      }
     }
 
     // Generate a magic link
@@ -63,7 +73,7 @@ export async function POST(request: NextRequest) {
     const token = linkUrl.searchParams.get('token_hash')
 
     // Get user profile to determine redirect
-    const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
+    const { data: profile } = await admin.from('profiles').select('role').eq('id', userId).single()
 
     return NextResponse.json({
       success: true,
