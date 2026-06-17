@@ -198,7 +198,7 @@ export default function DashboardClient({
       </div>
 
       {/* Mobile bottom picture bar - only shows on small screens */}
-      <div className="flex lg:hidden fixed bottom-0 left-0 right-0 h-48 z-10">
+      <div className="flex lg:hidden fixed bottom-0 left-0 right-0 h-28 md:h-48 z-10">
         <div className="flex-1 relative overflow-hidden border-r border-[#1a2844]">
           <img
             src="/PigandPint.jpg"
@@ -267,7 +267,7 @@ export default function DashboardClient({
         </div>
       </div>
 
-      <div className="px-4 py-4 max-w-2xl mx-auto space-y-3 pb-56 lg:pb-4">
+      <div className="px-4 py-4 max-w-2xl mx-auto space-y-3 pb-32 md:pb-56 lg:pb-4">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <Users size={15} className="text-slate-400" />
