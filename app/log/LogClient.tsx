@@ -275,7 +275,7 @@ export default function LogClient({
                 <img
                   src="/PigandPint.jpg"
                   alt="Murrah"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#08091a] to-transparent" />
               </>
