@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import AthleteHistoryClient from './AthleteHistoryClient'
 
+export const dynamic = 'force-dynamic'
+
 function adminClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

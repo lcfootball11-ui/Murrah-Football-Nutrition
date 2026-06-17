@@ -82,9 +82,10 @@ export default function AthleteHistoryClient({
 
   // Group into weeks or months
   const grouped = useMemo(() => {
+    type DayTotal = (typeof dailyTotals)[number]
     if (view === 'week') {
-      const weeks: typeof dailyTotals[][] = []
-      let current: typeof dailyTotals[] = []
+      const weeks: DayTotal[][] = []
+      let current: DayTotal[] = []
       dailyTotals.forEach((day, idx) => {
         current.push(day)
         if ((idx + 1) % 7 === 0 || idx === dailyTotals.length - 1) {
@@ -94,8 +95,8 @@ export default function AthleteHistoryClient({
       })
       return weeks.reverse()
     } else {
-      const months: typeof dailyTotals[][] = []
-      let current: typeof dailyTotals[] = []
+      const months: DayTotal[][] = []
+      let current: DayTotal[] = []
       let currentMonth = ''
       dailyTotals.forEach((day, idx) => {
         const month = day.date.slice(0, 7)

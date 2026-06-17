@@ -3,6 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import LogClient from './LogClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function LogPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
