@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     let userId: string
 
-    if (createError && !createError.message.includes('already exists')) {
+    if (createError && !createError.message.includes('already been registered')) {
       return NextResponse.json({ error: createError.message }, { status: 400 })
     }
 
