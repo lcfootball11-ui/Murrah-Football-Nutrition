@@ -83,9 +83,9 @@ export default async function DashboardPage() {
   }
 
   // Calculate stale weight logs (7+ days since last entry)
-  const sevenDaysAgo = new Date(today + 'T12:00:00')
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-  const staleWeightCutoff = sevenDaysAgo.toISOString().split('T')[0]
+  const sevenDaysAgoWeight = new Date(today + 'T12:00:00')
+  sevenDaysAgoWeight.setDate(sevenDaysAgoWeight.getDate() - 7)
+  const staleWeightCutoff = sevenDaysAgoWeight.toISOString().split('T')[0]
 
   const staleWeights: Record<string, boolean> = {}
   const latestWeights: Record<string, { date: string; weight: number } | null> = {}
