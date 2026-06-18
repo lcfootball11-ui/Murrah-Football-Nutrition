@@ -680,7 +680,7 @@ export default function DashboardClient({
 
                     <div className="grid grid-cols-2 gap-2 mt-2">
                       {(() => {
-                        const athleteWeeklyLogs = weeklyLogs.filter(l => l.user_id === athlete.id)
+                        const athleteWeeklyLogs = weeklyLogs.filter(l => l.user_id === athlete.id && l.calories > 0)
                         const avgCal = athleteWeeklyLogs.length > 0 ? Math.round(athleteWeeklyLogs.reduce((sum, l) => sum + l.calories, 0) / athleteWeeklyLogs.length) : 0
                         const avgPro = athleteWeeklyLogs.length > 0 ? Math.round(athleteWeeklyLogs.reduce((sum, l) => sum + l.protein, 0) / athleteWeeklyLogs.length * 10) / 10 : 0
 
