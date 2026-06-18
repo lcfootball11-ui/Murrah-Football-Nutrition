@@ -88,20 +88,20 @@ export default async function DashboardPage() {
   const staleWeightCutoff = sevenDaysAgo.toISOString().split('T')[0]
 
   const staleWeights: Record<string, boolean> = {}
-  const latestWeights: Record<string, string> = {}
+  const latestWeights: Record<string, { date: string; weight: number } | null> = {}
 
   // Get latest weight for each athlete
-  const weightByAthlete: Record<string, string> = {}
+  const weightByAthlete: Record<string, { log_date: string; weight_lbs: number }> = {}
   for (const row of (weightLogsRes.data ?? [])) {
     if (!weightByAthlete[row.user_id]) {
-      weightByAthlete[row.user_id] = row.log_date
+      weightByAthlete[row.user_id] = { log_date: row.log_date, weight_lbs: row.weight_lbs }
     }
   }
 
   for (const id of athleteIds) {
-    const latestWeight = weightByAthlete[id]
-    latestWeights[id] = latestWeight || 'never'
-    staleWeights[id] = !latestWeight || latestWeight < staleWeightCutoff
+    const latest = weightByAthlete[id]
+    latestWeights[id] = latest ? { date: latest.log_date, weight: latest.weight_lbs } : null
+    staleWeights[id] = !latest || latest.log_date < staleWeightCutoff
   }
 
   return (

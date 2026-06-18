@@ -13,7 +13,7 @@ type SuppLog = { user_id: string; supplement_name: string; taken: boolean }
 type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[]; plan: 'gain' | 'loss'; target_weight?: number; goal_weight?: number }
 type WeeklyLog = { user_id: string; log_date: string; calories: number; protein: number }
 type StaleWeights = { [key: string]: boolean }
-type LatestWeights = { [key: string]: string }
+type LatestWeights = { [key: string]: { date: string; weight: number } | null }
 
 function pct(val: number, target: number) {
   if (!target) return 0
@@ -516,6 +516,21 @@ export default function DashboardClient({
                       </div>
                     </div>
                   )}
+
+                  {/* Weight Info */}
+                  <div className="glass rounded-xl p-3">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Latest Weight</p>
+                    {latestWeights[athlete.id] ? (
+                      <div className="space-y-1">
+                        <p className="text-lg font-black text-green-400">{latestWeights[athlete.id]?.weight.toFixed(1)} lbs ⚖️</p>
+                        <p className="text-xs text-slate-400">
+                          Logged on {new Date(latestWeights[athlete.id]!.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-500">No weight logged yet</p>
+                    )}
+                  </div>
 
                   <div className="space-y-3 border-t border-white/5 pt-3">
                     <div>
