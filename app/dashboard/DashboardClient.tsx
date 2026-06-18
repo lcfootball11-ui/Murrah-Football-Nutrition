@@ -257,12 +257,11 @@ export default function DashboardClient({
     const plan = target?.plan ?? 'gain'
     const totalCal = athleteLogs.reduce((sum, l) => sum + l.calories, 0)
 
-    if (plan === 'loss') {
-      return totalCal <= calTarget
-    } else {
-      return totalCal >= calTarget * 0.9
-    }
+    const goalMet = plan === 'loss' ? totalCal <= calTarget : totalCal >= calTarget * 0.9
+    console.log(`${athlete.full_name}: ${totalCal}cal / ${calTarget}cal (${plan}) = ${goalMet ? 'MET' : 'NOT MET'}`)
+    return goalMet
   }).length
+  console.log('Total goals met:', goalsMetCount)
 
   return (
     <div className="min-h-screen mustang-gradient text-white pb-10 relative">
