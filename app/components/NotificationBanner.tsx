@@ -67,7 +67,7 @@ export default function NotificationBanner() {
   const unreadNotifications = notifications.filter(n => !n.read_at)
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 left-4 z-50">
       {/* Bell Icon Button */}
       <button
         onClick={() => setShowPanel(!showPanel)}
@@ -83,7 +83,7 @@ export default function NotificationBanner() {
 
       {/* Notifications Panel */}
       {showPanel && (
-        <div className="absolute bottom-16 right-0 w-96 max-h-96 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="absolute bottom-16 left-0 w-96 max-h-96 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col">
           {/* Header */}
           <div className="bg-slate-700 px-4 py-3 border-b border-slate-600 flex items-center justify-between">
             <h3 className="font-bold text-white flex items-center gap-2">
