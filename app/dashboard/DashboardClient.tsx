@@ -620,7 +620,7 @@ export default function DashboardClient({
                   <div className="border-t border-white/5 pt-3">
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Weekly Summary</p>
                     <div className="glass rounded-xl p-3">
-                      <div className="flex items-end gap-1.5 h-16 justify-between">
+                      <div className="flex items-end gap-1.5 h-20 justify-between">
                         {(() => {
                           const weeklyData: Record<string, number> = {}
                           const athleteWeeklyLogs = weeklyLogs.filter(l => l.user_id === athlete.id)
@@ -637,21 +637,20 @@ export default function DashboardClient({
                             days.push({ date: dateStr, cal: weeklyData[dateStr] || 0 })
                           }
 
-                          const maxCal = Math.max(...days.map(d => d.cal), calTarget)
-
                           return days.map((day, idx) => {
-                            const height = (day.cal / maxCal) * 100
+                            const percentage = Math.min((day.cal / calTarget) * 100, 100)
                             const isMet = day.cal >= calTarget * 0.9
                             return (
-                              <div key={idx} className="flex-1 flex flex-col items-center gap-1">
-                                <div
-                                  className="w-full rounded-sm transition-all"
-                                  style={{
-                                    height: `${height}%`,
-                                    background: isMet ? '#22c55e' : '#94a3b8',
-                                    minHeight: day.cal > 0 ? '4px' : '0px'
-                                  }}
-                                />
+                              <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full">
+                                <div className="w-full h-full bg-white/10 rounded-sm overflow-hidden flex items-end">
+                                  <div
+                                    className="w-full rounded-sm transition-all"
+                                    style={{
+                                      height: `${percentage}%`,
+                                      background: isMet ? '#22c55e' : '#94a3b8'
+                                    }}
+                                  />
+                                </div>
                                 <span className="text-xs text-slate-500">{new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1)}</span>
                               </div>
                             )
