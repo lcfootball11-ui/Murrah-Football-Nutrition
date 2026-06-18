@@ -51,7 +51,7 @@ export default async function DashboardPage() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
   const weekStartDate = sevenDaysAgo.toISOString().split('T')[0]
 
-  const [logsRes, suppLogsRes, targetsRes, allLogsRes, weeklyLogsRes] = await Promise.all([
+  const [logsRes, suppLogsRes, targetsRes, allLogsRes, weeklyLogsRes, weightLogsRes] = await Promise.all([
     admin.from('nutrition_logs').select('user_id, calories, protein, carbs, fat').eq('log_date', today),
     admin.from('supplement_logs').select('user_id, supplement_name, taken').eq('log_date', today),
     admin.from('macro_targets').select('*'),
@@ -60,6 +60,9 @@ export default async function DashboardPage() {
       : Promise.resolve({ data: [] }),
     athleteIds.length > 0
       ? admin.from('nutrition_logs').select('user_id, log_date, calories, protein').gte('log_date', weekStartDate).lte('log_date', today).in('user_id', athleteIds)
+      : Promise.resolve({ data: [] }),
+    athleteIds.length > 0
+      ? admin.from('weight_logs').select('user_id, log_date').in('user_id', athleteIds).order('log_date', { ascending: false })
       : Promise.resolve({ data: [] }),
   ])
 
@@ -79,6 +82,28 @@ export default async function DashboardPage() {
     streaks[id] = calcStreak(dates, today)
   }
 
+  // Calculate stale weight logs (7+ days since last entry)
+  const sevenDaysAgo = new Date(today + 'T12:00:00')
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const staleWeightCutoff = sevenDaysAgo.toISOString().split('T')[0]
+
+  const staleWeights: Record<string, boolean> = {}
+  const latestWeights: Record<string, string> = {}
+
+  // Get latest weight for each athlete
+  const weightByAthlete: Record<string, string> = {}
+  for (const row of (weightLogsRes.data ?? [])) {
+    if (!weightByAthlete[row.user_id]) {
+      weightByAthlete[row.user_id] = row.log_date
+    }
+  }
+
+  for (const id of athleteIds) {
+    const latestWeight = weightByAthlete[id]
+    latestWeights[id] = latestWeight || 'never'
+    staleWeights[id] = !latestWeight || latestWeight < staleWeightCutoff
+  }
+
   return (
     <DashboardClient
       coachName={profile.full_name}
@@ -89,6 +114,8 @@ export default async function DashboardPage() {
       streaks={streaks}
       today={today}
       weeklyLogs={weeklyLogsRes.data ?? []}
+      staleWeights={staleWeights}
+      latestWeights={latestWeights}
     />
   )
 }

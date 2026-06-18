@@ -12,6 +12,8 @@ type Log = { user_id: string; calories: number; protein: number; carbs: number; 
 type SuppLog = { user_id: string; supplement_name: string; taken: boolean }
 type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[]; plan: 'gain' | 'loss'; target_weight?: number; goal_weight?: number }
 type WeeklyLog = { user_id: string; log_date: string; calories: number; protein: number }
+type StaleWeights = { [key: string]: boolean }
+type LatestWeights = { [key: string]: string }
 
 function pct(val: number, target: number) {
   if (!target) return 0
@@ -27,6 +29,8 @@ export default function DashboardClient({
   streaks,
   today,
   weeklyLogs,
+  staleWeights = {},
+  latestWeights = {},
 }: {
   coachName: string
   athletes: Athlete[]
@@ -36,6 +40,8 @@ export default function DashboardClient({
   streaks: Record<string, number>
   today: string
   weeklyLogs: WeeklyLog[]
+  staleWeights?: StaleWeights
+  latestWeights?: LatestWeights
 }) {
   const supabase = createClient()
   const router = useRouter()
@@ -436,8 +442,13 @@ export default function DashboardClient({
                   {athlete.full_name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-bold text-sm text-white truncate">{athlete.full_name}</p>
+                    {staleWeights[athlete.id] && (
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-red-500/20 text-red-300 shrink-0">
+                        ⚠️ No Weight
+                      </span>
+                    )}
                     <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md shrink-0 ${plan === 'gain' ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-500/20 text-slate-300'}`}>
                       {plan === 'gain' ? '📈' : '📉'}
                     </span>
