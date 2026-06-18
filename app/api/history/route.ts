@@ -29,13 +29,27 @@ export async function GET(request: NextRequest) {
   const endStr = today.toISOString().split('T')[0]
 
   const admin = adminClient()
-  const { data: logs } = await admin
-    .from('nutrition_logs')
-    .select('log_date, calories, protein, carbs, fat')
-    .eq('user_id', user.id)
-    .gte('log_date', startStr)
-    .lte('log_date', endStr)
-    .order('log_date', { ascending: true })
+  const [logsRes, weightsRes] = await Promise.all([
+    admin
+      .from('nutrition_logs')
+      .select('log_date, calories, protein, carbs, fat')
+      .eq('user_id', user.id)
+      .gte('log_date', startStr)
+      .lte('log_date', endStr)
+      .order('log_date', { ascending: true }),
+    admin
+      .from('weight_logs')
+      .select('log_date, weight_lbs')
+      .eq('user_id', user.id)
+      .gte('log_date', startStr)
+      .lte('log_date', endStr)
+      .order('log_date', { ascending: true }),
+  ])
 
-  return NextResponse.json({ logs: logs ?? [], startStr, endStr })
+  return NextResponse.json({
+    logs: logsRes.data ?? [],
+    weights: weightsRes.data ?? [],
+    startStr,
+    endStr
+  })
 }

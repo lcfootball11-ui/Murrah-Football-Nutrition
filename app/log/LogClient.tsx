@@ -107,6 +107,7 @@ export default function LogClient({
   const [showAddModal, setShowAddModal] = useState(false)
   const [mode, setMode] = useState<'search' | 'manual'>('search')
   const [historyLogs, setHistoryLogs] = useState<{ log_date: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
+  const [historyWeights, setHistoryWeights] = useState<{ log_date: string; weight_lbs: number }[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
   const [streak, setStreak] = useState(0)
 
@@ -163,6 +164,7 @@ export default function LogClient({
     const res = await fetch(`/api/history?range=${range}`)
     const data = await res.json()
     setHistoryLogs(data.logs ?? [])
+    setHistoryWeights(data.weights ?? [])
     setHistoryLoading(false)
   }, [])
 
@@ -576,6 +578,12 @@ export default function LogClient({
                       <span className="text-slate-400 text-xs">{Math.round(total.carbs)}g C</span>
                       <span className="text-slate-600 text-xs">·</span>
                       <span className="text-slate-400 text-xs">{Math.round(total.fat)}g F</span>
+                      {historyWeights.find(w => w.log_date === date) && (
+                        <>
+                          <span className="text-slate-600 text-xs">·</span>
+                          <span className="text-green-400 text-xs font-bold">{historyWeights.find(w => w.log_date === date)?.weight_lbs.toFixed(1)} lbs ⚖️</span>
+                        </>
+                      )}
                       <span className="text-slate-600 text-xs ml-auto">tap to edit →</span>
                     </div>
                   </button>
