@@ -19,6 +19,12 @@ function calcStreak(dates: string[], today: string): number {
   return streak
 }
 
+function getCentralTime() {
+  const now = new Date()
+  const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+  return utcDate.toISOString().split('T')[0]
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -29,7 +35,7 @@ export default async function DashboardPage() {
   const { data: profile } = await admin.from('profiles').select('*').eq('id', user.id).single()
   if (!profile || profile.role !== 'coach') redirect('/log')
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getCentralTime()
 
   const { data: athletes } = await admin
     .from('profiles')

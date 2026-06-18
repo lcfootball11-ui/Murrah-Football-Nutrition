@@ -5,6 +5,12 @@ import LogClient from './LogClient'
 
 export const dynamic = 'force-dynamic'
 
+function getCentralTime() {
+  const now = new Date()
+  const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+  return utcDate.toISOString().split('T')[0]
+}
+
 export default async function LogPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -16,7 +22,7 @@ export default async function LogPage() {
   if (!profile) redirect('/login')
   if (profile.role === 'coach') redirect('/dashboard')
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getCentralTime()
 
   const { data: logs } = await admin
     .from('nutrition_logs')

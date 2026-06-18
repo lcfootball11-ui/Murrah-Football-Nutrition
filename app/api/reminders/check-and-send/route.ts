@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+function getCentralTime() {
+  const now = new Date()
+  const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+  return utcDate.toISOString().split('T')[0]
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Verify this is from Vercel Cron
@@ -15,7 +21,7 @@ export async function POST(request: NextRequest) {
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
-    const today = new Date().toISOString().split('T')[0]
+    const today = getCentralTime()
 
     // Get all athletes with phone numbers and reminders enabled
     const { data: athletes } = await supabase
