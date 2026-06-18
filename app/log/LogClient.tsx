@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings } from 'lucide-react'
+import WeightTracker from './WeightTracker'
 
 type FoodResult = {
   fdcId: number
@@ -463,6 +464,11 @@ export default function LogClient({
               })}
             </div>
           </div>
+        )}
+
+        {/* Weight Tracker */}
+        {tab === 'today' && (
+          <WeightTracker today={today} />
         )}
 
         {/* Food log - today */}
