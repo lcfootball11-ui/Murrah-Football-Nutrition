@@ -317,7 +317,7 @@ export default function DashboardClient({
             backgroundPosition: 'center top',
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-[#08091a]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-[#08091a]"></div>
         <div className="relative px-4 pt-5 pb-5">
           <div className="flex items-start justify-between mb-5">
             <div>
