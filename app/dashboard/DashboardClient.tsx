@@ -263,6 +263,10 @@ export default function DashboardClient({
   }).length
   console.log('Total goals met:', goalsMetCount)
 
+  // Calculate averages
+  const avgCalories = logs.length > 0 ? Math.round(logs.reduce((sum, l) => sum + l.calories, 0) / logs.length) : 0
+  const avgProtein = logs.length > 0 ? Math.round(logs.reduce((sum, l) => sum + l.protein, 0) / logs.length * 10) / 10 : 0
+
   return (
     <div className="min-h-screen mustang-gradient text-white pb-10 relative">
       {/* Left side panel with vertically stacked images - Desktop left, hidden on mobile */}
@@ -326,22 +330,35 @@ export default function DashboardClient({
             </button>
           </div>
 
-          {/* Stats row */}
-          <div className="grid grid-cols-4 gap-3">
-            {[
-              { label: 'Athletes', value: athletes.length, emoji: '🏈' },
-              { label: 'Logged Today', value: totalLogged, emoji: '✅' },
-              { label: 'Goals Met', value: goalsMetCount, emoji: goalsMetCount > 0 ? '🎯' : '📊' },
-              { label: 'Compliance', value: `${compliancePct}%`, emoji: compliancePct >= 70 ? '🔥' : '💪' },
-            ].map(({ label, value, emoji }) => (
-              <div key={label} className="glass-blue rounded-2xl p-3 text-center">
-                <p className="text-xl mb-0.5">{emoji}</p>
-                <p className="text-xl font-black text-white">{value}</p>
-                <p className="text-xs text-slate-400 font-medium">{label}</p>
-              </div>
-            ))}
+          {/* Stats rows */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: 'Athletes', value: athletes.length, emoji: '🏈' },
+                { label: 'Logged Today', value: totalLogged, emoji: '✅' },
+                { label: 'Goals Met', value: goalsMetCount, emoji: goalsMetCount > 0 ? '🎯' : '📊' },
+              ].map(({ label, value, emoji }) => (
+                <div key={label} className="glass-blue rounded-2xl p-3 text-center">
+                  <p className="text-xl mb-0.5">{emoji}</p>
+                  <p className="text-xl font-black text-white">{value}</p>
+                  <p className="text-xs text-slate-400 font-medium">{label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: 'Compliance', value: `${compliancePct}%`, emoji: compliancePct >= 70 ? '🔥' : '💪' },
+                { label: 'Avg Calories', value: avgCalories, emoji: '🍎' },
+                { label: 'Avg Protein', value: `${avgProtein}g`, emoji: '💪' },
+              ].map(({ label, value, emoji }) => (
+                <div key={label} className="glass-blue rounded-2xl p-3 text-center">
+                  <p className="text-xl mb-0.5">{emoji}</p>
+                  <p className="text-xl font-black text-white">{value}</p>
+                  <p className="text-xs text-slate-400 font-medium">{label}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
       </div>
 
       <div className="px-4 py-4 max-w-2xl mx-auto space-y-3 pb-4">
