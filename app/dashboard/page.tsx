@@ -36,6 +36,7 @@ export default async function DashboardPage() {
   if (!profile || profile.role !== 'coach') redirect('/log')
 
   const today = getCentralTime()
+  console.log('Dashboard querying for date:', today)
 
   const { data: athletes } = await admin
     .from('profiles')
@@ -53,6 +54,10 @@ export default async function DashboardPage() {
       ? admin.from('nutrition_logs').select('user_id, log_date').in('user_id', athleteIds)
       : Promise.resolve({ data: [] }),
   ])
+
+  console.log('Logs found for today:', logsRes.data?.length || 0)
+  console.log('Athletes count:', athletes?.length || 0)
+  console.log('Targets count:', targetsRes.data?.length || 0)
 
   // Calculate streaks for all athletes
   const byAthlete: Record<string, string[]> = {}
