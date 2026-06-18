@@ -9,7 +9,7 @@ type Athlete = { id: string; full_name: string; email?: string; phone_number?: s
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
 type SuppLog = { user_id: string; supplement_name: string; taken: boolean }
 type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[]; plan: 'gain' | 'loss'; target_weight?: number; goal_weight?: number }
-type WeeklyLog = { user_id: string; log_date: string; calories: number }
+type WeeklyLog = { user_id: string; log_date: string; calories: number; protein: number }
 
 function pct(val: number, target: number) {
   if (!target) return 0
@@ -330,34 +330,19 @@ export default function DashboardClient({
             </button>
           </div>
 
-          {/* Stats rows */}
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: 'Athletes', value: athletes.length, emoji: '🏈' },
-                { label: 'Logged Today', value: totalLogged, emoji: '✅' },
-                { label: 'Goals Met', value: goalsMetCount, emoji: goalsMetCount > 0 ? '🎯' : '📊' },
-              ].map(({ label, value, emoji }) => (
-                <div key={label} className="glass-blue rounded-2xl p-3 text-center">
-                  <p className="text-xl mb-0.5">{emoji}</p>
-                  <p className="text-xl font-black text-white">{value}</p>
-                  <p className="text-xs text-slate-400 font-medium">{label}</p>
-                </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: 'Compliance', value: `${compliancePct}%`, emoji: compliancePct >= 70 ? '🔥' : '💪' },
-                { label: 'Avg Calories', value: avgCalories, emoji: '🍎' },
-                { label: 'Avg Protein', value: `${avgProtein}g`, emoji: '💪' },
-              ].map(({ label, value, emoji }) => (
-                <div key={label} className="glass-blue rounded-2xl p-3 text-center">
-                  <p className="text-xl mb-0.5">{emoji}</p>
-                  <p className="text-xl font-black text-white">{value}</p>
-                  <p className="text-xs text-slate-400 font-medium">{label}</p>
-                </div>
-              ))}
-            </div>
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Athletes', value: athletes.length, emoji: '🏈' },
+              { label: 'Logged Today', value: totalLogged, emoji: '✅' },
+              { label: 'Goals Met', value: goalsMetCount, emoji: goalsMetCount > 0 ? '🎯' : '📊' },
+            ].map(({ label, value, emoji }) => (
+              <div key={label} className="glass-blue rounded-2xl p-3 text-center">
+                <p className="text-xl mb-0.5">{emoji}</p>
+                <p className="text-xl font-black text-white">{value}</p>
+                <p className="text-xs text-slate-400 font-medium">{label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -691,6 +676,27 @@ export default function DashboardClient({
                           })
                         })()}
                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {(() => {
+                        const athleteWeeklyLogs = weeklyLogs.filter(l => l.user_id === athlete.id)
+                        const avgCal = athleteWeeklyLogs.length > 0 ? Math.round(athleteWeeklyLogs.reduce((sum, l) => sum + l.calories, 0) / athleteWeeklyLogs.length) : 0
+                        const avgPro = athleteWeeklyLogs.length > 0 ? Math.round(athleteWeeklyLogs.reduce((sum, l) => sum + l.protein, 0) / athleteWeeklyLogs.length * 10) / 10 : 0
+
+                        return (
+                          <>
+                            <div className="glass rounded-lg p-2 text-center">
+                              <p className="text-xs text-slate-400">Avg Calories</p>
+                              <p className="text-sm font-bold text-blue-300">{avgCal}</p>
+                            </div>
+                            <div className="glass rounded-lg p-2 text-center">
+                              <p className="text-xs text-slate-400">Avg Protein</p>
+                              <p className="text-sm font-bold text-blue-300">{avgPro}g</p>
+                            </div>
+                          </>
+                        )
+                      })()}
                     </div>
                   </div>
                 </div>
