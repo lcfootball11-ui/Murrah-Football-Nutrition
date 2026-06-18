@@ -30,10 +30,10 @@ export default function WeightTrendChart() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/weight-trends?days=90')
-      const { data } = await res.json()
+      const { data } = await res.json() as { data: AthleteWeightData[] }
       setWeightData(data || [])
       // By default, show first 10 athletes
-      const defaultSelected = new Set(data?.slice(0, 10).map((a: AthleteWeightData) => a.athlete_id) || [])
+      const defaultSelected = new Set<string>(data?.slice(0, 10).map((a: AthleteWeightData) => a.athlete_id) || [])
       setSelectedAthletes(defaultSelected)
     } catch (err) {
       console.error('Failed to load weight trends:', err)
