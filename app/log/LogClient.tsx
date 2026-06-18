@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings } from 'lucide-react'
 import WeightTracker from './WeightTracker'
+import NotificationBanner from '@/app/components/NotificationBanner'
 
 type FoodResult = {
   fdcId: number
@@ -780,6 +781,8 @@ export default function LogClient({
           </div>
         </div>
       </div>
+
+      <NotificationBanner />
     </div>
   )
 }

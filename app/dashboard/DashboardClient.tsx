@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History } from 'lucide-react'
+import NotificationBanner from '@/app/components/NotificationBanner'
 // import WeightTrendChart from './WeightTrendChart' // TODO: Re-enable when weight data is more robust
 
 type Athlete = { id: string; full_name: string; email?: string; phone_number?: string | null; reminder_enabled?: boolean }
@@ -934,6 +935,8 @@ export default function DashboardClient({
           </div>
         </div>
       )}
+
+      <NotificationBanner />
     </div>
   )
 }
