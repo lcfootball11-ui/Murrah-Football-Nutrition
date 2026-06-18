@@ -267,6 +267,10 @@ export default function DashboardClient({
   const avgCalories = logs.length > 0 ? Math.round(logs.reduce((sum, l) => sum + l.calories, 0) / logs.length) : 0
   const avgProtein = logs.length > 0 ? Math.round(logs.reduce((sum, l) => sum + l.protein, 0) / logs.length * 10) / 10 : 0
 
+  // Find longest streak
+  const longestStreak = Math.max(0, ...Object.values(streaks))
+  const longestStreakAthlete = athletes.find(a => streaks[a.id] === longestStreak)
+
   return (
     <div className="min-h-screen mustang-gradient text-white pb-10 relative">
       {/* Left side panel with vertically stacked images - Desktop left, hidden on mobile */}
@@ -331,16 +335,23 @@ export default function DashboardClient({
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               { label: 'Athletes', value: athletes.length, emoji: '🏈' },
               { label: 'Logged Today', value: totalLogged, emoji: '✅' },
               { label: 'Goals Met', value: goalsMetCount, emoji: goalsMetCount > 0 ? '🎯' : '📊' },
-            ].map(({ label, value, emoji }) => (
+              {
+                label: 'Longest Streak',
+                value: longestStreak,
+                emoji: '🔥',
+                subtext: longestStreakAthlete ? longestStreakAthlete.full_name : 'N/A'
+              },
+            ].map(({ label, value, emoji, subtext }) => (
               <div key={label} className="glass-blue rounded-2xl p-3 text-center">
                 <p className="text-xl mb-0.5">{emoji}</p>
                 <p className="text-xl font-black text-white">{value}</p>
                 <p className="text-xs text-slate-400 font-medium">{label}</p>
+                {subtext && <p className="text-xs text-blue-300 mt-0.5 truncate">{subtext}</p>}
               </div>
             ))}
           </div>
