@@ -62,7 +62,7 @@ export default async function DashboardPage() {
       ? admin.from('nutrition_logs').select('user_id, log_date, calories, protein').gte('log_date', weekStartDate).lte('log_date', today).in('user_id', athleteIds)
       : Promise.resolve({ data: [] }),
     athleteIds.length > 0
-      ? admin.from('weight_logs').select('user_id, log_date').in('user_id', athleteIds).order('log_date', { ascending: false })
+      ? admin.from('weight_logs').select('user_id, log_date, weight_lbs').in('user_id', athleteIds).order('log_date', { ascending: false })
       : Promise.resolve({ data: [] }),
   ])
 
