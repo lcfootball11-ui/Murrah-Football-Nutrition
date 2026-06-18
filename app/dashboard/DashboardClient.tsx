@@ -359,7 +359,7 @@ export default function DashboardClient({
               ))}
             </div>
           </div>
-      </div>
+        </div>
 
       <div className="px-4 py-4 max-w-2xl mx-auto space-y-3 pb-4">
         <div className="flex items-center justify-between mb-1">
