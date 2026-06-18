@@ -400,9 +400,9 @@ export default function DashboardClient({
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${calPct}%`, background: statusColor, boxShadow: `0 0 6px ${statusColor}88` }} />
+                      <div className="h-full rounded-full" style={{ width: `${calPct}%`, background: '#4169E1', boxShadow: '0 0 6px #4169E144' }} />
                     </div>
-                    <span className="text-xs font-bold shrink-0" style={{ color: statusColor }}>{calPct}%</span>
+                    <span className="text-xs font-bold shrink-0 text-blue-400">{calPct}%</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
