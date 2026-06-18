@@ -9,6 +9,7 @@ type Athlete = { id: string; full_name: string; email?: string; phone_number?: s
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
 type SuppLog = { user_id: string; supplement_name: string; taken: boolean }
 type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[]; plan: 'gain' | 'loss'; target_weight?: number; goal_weight?: number }
+type WeeklyLog = { user_id: string; log_date: string; calories: number }
 
 function pct(val: number, target: number) {
   if (!target) return 0
@@ -23,6 +24,7 @@ export default function DashboardClient({
   targets,
   streaks,
   today,
+  weeklyLogs,
 }: {
   coachName: string
   athletes: Athlete[]
@@ -31,6 +33,7 @@ export default function DashboardClient({
   targets: Target[]
   streaks: Record<string, number>
   today: string
+  weeklyLogs: WeeklyLog[]
 }) {
   const supabase = createClient()
   const router = useRouter()
@@ -612,6 +615,50 @@ export default function DashboardClient({
                     >
                       <Target size={12} /> Set targets →
                     </button>
+                  </div>
+
+                  <div className="border-t border-white/5 pt-3">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Weekly Summary</p>
+                    <div className="glass rounded-xl p-3">
+                      <div className="flex items-end gap-1.5 h-16 justify-between">
+                        {(() => {
+                          const weeklyData: Record<string, number> = {}
+                          const athleteWeeklyLogs = weeklyLogs.filter(l => l.user_id === athlete.id)
+                          athleteWeeklyLogs.forEach(log => {
+                            weeklyData[log.log_date] = (weeklyData[log.log_date] || 0) + log.calories
+                          })
+
+                          const days = []
+                          const d = new Date(today + 'T12:00:00')
+                          for (let i = 6; i >= 0; i--) {
+                            const date = new Date(d)
+                            date.setDate(date.getDate() - i)
+                            const dateStr = date.toISOString().split('T')[0]
+                            days.push({ date: dateStr, cal: weeklyData[dateStr] || 0 })
+                          }
+
+                          const maxCal = Math.max(...days.map(d => d.cal), calTarget)
+
+                          return days.map((day, idx) => {
+                            const height = (day.cal / maxCal) * 100
+                            const isMet = day.cal >= calTarget * 0.9
+                            return (
+                              <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                                <div
+                                  className="w-full rounded-sm transition-all"
+                                  style={{
+                                    height: `${height}%`,
+                                    background: isMet ? '#22c55e' : '#94a3b8',
+                                    minHeight: day.cal > 0 ? '4px' : '0px'
+                                  }}
+                                />
+                                <span className="text-xs text-slate-500">{new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1)}</span>
+                              </div>
+                            )
+                          })
+                        })()}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
