@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History } from 'lucide-react'
+import WeightTrendChart from './WeightTrendChart'
 
 type Athlete = { id: string; full_name: string; email?: string; phone_number?: string | null; reminder_enabled?: boolean }
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
@@ -356,6 +357,11 @@ export default function DashboardClient({
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Weight Trends Chart */}
+      <div className="px-4 py-4 max-w-5xl mx-auto pb-4">
+        <WeightTrendChart />
       </div>
 
       <div className="px-4 py-4 max-w-2xl mx-auto space-y-3 pb-4">
