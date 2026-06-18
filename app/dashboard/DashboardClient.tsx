@@ -383,7 +383,11 @@ export default function DashboardClient({
           const statusEmoji = !hasLogged ? '💤' : compliant ? (plan === 'gain' ? '🔥' : '✅') : '😡'
 
           return (
-            <div key={athlete.id} className="card overflow-hidden">
+            <div
+              key={athlete.id}
+              className="card overflow-hidden"
+              style={calPct >= 100 ? { background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.08) 100%)', borderColor: '#22c55e' } : {}}
+            >
               <button
                 className="w-full px-4 py-3.5 flex items-center gap-3"
                 onClick={() => setExpanded(isExpanded ? null : athlete.id)}
