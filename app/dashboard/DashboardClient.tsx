@@ -248,6 +248,22 @@ export default function DashboardClient({
   const totalLogged = athletes.filter(a => logs.some(l => l.user_id === a.id)).length
   const compliancePct = athletes.length > 0 ? Math.round((totalLogged / athletes.length) * 100) : 0
 
+  // Count athletes who met their calorie goals
+  const goalsMetCount = athletes.filter(athlete => {
+    const athleteLogs = logs.filter(l => l.user_id === athlete.id)
+    if (athleteLogs.length === 0) return false
+    const target = targets.find(t => t.user_id === athlete.id)
+    const calTarget = target?.calories ?? 2500
+    const plan = target?.plan ?? 'gain'
+    const totalCal = athleteLogs.reduce((sum, l) => sum + l.calories, 0)
+
+    if (plan === 'loss') {
+      return totalCal <= calTarget
+    } else {
+      return totalCal >= calTarget * 0.9
+    }
+  }).length
+
   return (
     <div className="min-h-screen mustang-gradient text-white pb-10 relative">
       {/* Left side panel with vertically stacked images - Desktop left, hidden on mobile */}
@@ -312,10 +328,11 @@ export default function DashboardClient({
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {[
               { label: 'Athletes', value: athletes.length, emoji: '🏈' },
               { label: 'Logged Today', value: totalLogged, emoji: '✅' },
+              { label: 'Goals Met', value: goalsMetCount, emoji: goalsMetCount > 0 ? '🎯' : '📊' },
               { label: 'Compliance', value: `${compliancePct}%`, emoji: compliancePct >= 70 ? '🔥' : '💪' },
             ].map(({ label, value, emoji }) => (
               <div key={label} className="glass-blue rounded-2xl p-3 text-center">
