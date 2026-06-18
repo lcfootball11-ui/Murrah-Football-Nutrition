@@ -681,10 +681,20 @@ export default function DashboardClient({
                     <div className="grid grid-cols-2 gap-2 mt-2">
                       {(() => {
                         const athleteWeeklyLogs = weeklyLogs.filter(l => l.user_id === athlete.id && l.calories > 0)
-                        console.log(`${athlete.full_name} weekly logs:`, athleteWeeklyLogs)
-                        const avgCal = athleteWeeklyLogs.length > 0 ? Math.round(athleteWeeklyLogs.reduce((sum, l) => sum + l.calories, 0) / athleteWeeklyLogs.length) : 0
-                        const avgPro = athleteWeeklyLogs.length > 0 ? Math.round(athleteWeeklyLogs.reduce((sum, l) => sum + l.protein, 0) / athleteWeeklyLogs.length * 10) / 10 : 0
-                        console.log(`${athlete.full_name} avg: ${avgCal}cal, ${avgPro}g protein`)
+
+                        // Group by date and sum calories/protein per day
+                        const byDate: Record<string, { calories: number; protein: number }> = {}
+                        athleteWeeklyLogs.forEach(log => {
+                          if (!byDate[log.log_date]) {
+                            byDate[log.log_date] = { calories: 0, protein: 0 }
+                          }
+                          byDate[log.log_date].calories += log.calories
+                          byDate[log.log_date].protein += log.protein
+                        })
+
+                        const daysWithLogs = Object.values(byDate)
+                        const avgCal = daysWithLogs.length > 0 ? Math.round(daysWithLogs.reduce((sum, d) => sum + d.calories, 0) / daysWithLogs.length) : 0
+                        const avgPro = daysWithLogs.length > 0 ? Math.round(daysWithLogs.reduce((sum, d) => sum + d.protein, 0) / daysWithLogs.length * 10) / 10 : 0
 
                         return (
                           <>
