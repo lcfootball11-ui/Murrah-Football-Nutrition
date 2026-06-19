@@ -126,6 +126,7 @@ export default function LogClient({
   const [selected, setSelected] = useState<FoodResult | null>(null)
   const [servings, setServings] = useState('1')
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const [manual, setManual] = useState({ meal_name: '', calories: '', protein: '', carbs: '', fat: '' })
   const [, startTransition] = useTransition()
   const [photoIndex, setPhotoIndex] = useState(0)
@@ -646,7 +647,7 @@ export default function LogClient({
       {/* FAB */}
       {tab === 'today' && (
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => { setShowAddModal(true); setTimeout(() => searchInputRef.current?.focus(), 100) }}
           className="btn-blue fixed bottom-6 right-6 text-white rounded-2xl w-16 h-16 flex items-center justify-center shadow-2xl z-10"
           style={{ boxShadow: '0 0 30px rgba(29,78,216,0.6)' }}
         >
@@ -726,7 +727,7 @@ export default function LogClient({
               ) : mode === 'search' ? (
                 <div className="space-y-3">
                   <input
-                    autoFocus
+                    ref={searchInputRef}
                     type="text"
                     value={query}
                     onChange={e => { setQuery(e.target.value); setSelected(null) }}
