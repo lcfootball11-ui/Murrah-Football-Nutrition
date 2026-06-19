@@ -7,6 +7,7 @@ import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings }
 import WeightTracker from './WeightTracker'
 import NotificationBanner from '@/app/components/NotificationBanner'
 import NutritionStreakBadge from '@/app/components/NutritionStreakBadge'
+import ChipotleMealBuilder from '@/app/components/ChipotleMealBuilder'
 
 type FoodResult = {
   fdcId: number
@@ -106,7 +107,7 @@ export default function LogClient({
   const [suppLogs, setSuppLogs] = useState<SuppLog[]>(initialSuppLogs)
   const [dateLoading, setDateLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
-  const [mode, setMode] = useState<'search' | 'manual'>('search')
+  const [mode, setMode] = useState<'search' | 'manual' | 'restaurant' | 'chipotle'>('search')
   const [historyLogs, setHistoryLogs] = useState<{ log_date: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
   const [historyWeights, setHistoryWeights] = useState<{ log_date: string; weight_lbs: number }[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
@@ -261,9 +262,21 @@ export default function LogClient({
     }
   }
 
+  async function addRestaurantMeal(name: string, calories: number, protein: number, carbs: number, fat: number) {
+    const entry = { log_date: activeDate, meal_name: name, calories, protein, carbs, fat, entry_method: 'manual' }
+    const res = await fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) })
+    const { data } = await res.json()
+    if (data) {
+      setLogs(prev => [...prev, data])
+      fetch('/api/streak').then(r => r.json()).then(d => setStreak(d.streak ?? 0))
+    }
+    resetModal()
+  }
+
   function resetModal() {
     setShowAddModal(false); setQuery(''); setResults([]); setSelected(null)
     setServings('1'); setManual({ meal_name: '', calories: '', protein: '', carbs: '', fat: '' })
+    setMode('search')
   }
 
   async function signOut() {
@@ -657,18 +670,44 @@ export default function LogClient({
 
               {/* Mode toggle */}
               <div className="flex glass rounded-2xl p-1 mb-5 gap-1">
-                {(['search', 'manual'] as const).map(m => (
-                  <button
-                    key={m}
-                    onClick={() => setMode(m)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${mode === m ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
-                  >
-                    {m === 'search' ? <><Search size={13} /> Search DB</> : <><ChevronDown size={13} /> Manual Entry</>}
-                  </button>
-                ))}
+                <button
+                  onClick={() => setMode('search')}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${mode === 'search' ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  <Search size={13} /> Search
+                </button>
+                <button
+                  onClick={() => setMode('restaurant')}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${mode === 'restaurant' || mode === 'chipotle' ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  🍽️ Restaurants
+                </button>
+                <button
+                  onClick={() => setMode('manual')}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${mode === 'manual' ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  <ChevronDown size={13} /> Manual
+                </button>
               </div>
 
-              {mode === 'search' ? (
+              {mode === 'restaurant' ? (
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Select Restaurant</p>
+                  <button
+                    onClick={() => setMode('chipotle' as typeof mode)}
+                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
+                  >
+                    <span className="text-3xl">🌯</span>
+                    <div className="text-left">
+                      <p className="font-bold text-white">Chipotle Mexican Grill</p>
+                      <p className="text-xs text-slate-400">Build your bowl, burrito, or tacos step by step</p>
+                    </div>
+                  </button>
+                  <p className="text-xs text-slate-600 text-center mt-4">More restaurants coming soon</p>
+                </div>
+              ) : (mode as string) === 'chipotle' ? (
+                <ChipotleMealBuilder onAdd={addRestaurantMeal} onClose={resetModal} />
+              ) : mode === 'search' ? (
                 <div className="space-y-3">
                   <input
                     autoFocus
