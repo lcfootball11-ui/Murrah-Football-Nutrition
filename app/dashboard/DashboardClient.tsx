@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History } from 'lucide-react'
+import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History, Settings } from 'lucide-react'
 import NotificationBanner from '@/app/components/NotificationBanner'
 // import WeightTrendChart from './WeightTrendChart' // TODO: Re-enable when weight data is more robust
 
@@ -64,6 +64,14 @@ export default function DashboardClient({
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({})
   const [tempPasswords, setTempPasswords] = useState<Record<string, string>>({})
   const [generatingPassword, setGeneratingPassword] = useState<string | null>(null)
+  const [showSettings, setShowSettings] = useState(false)
+  const [settingsTab, setSettingsTab] = useState<'email' | 'password'>('email')
+  const [newEmail, setNewEmail] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [settingsSaving, setSettingsSaving] = useState(false)
+  const [settingsMsg, setSettingsMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [, startTransition] = useTransition()
   const [photoIndex, setPhotoIndex] = useState(0)
   const photoList = [
@@ -96,6 +104,36 @@ export default function DashboardClient({
   async function signOut() {
     await supabase.auth.signOut()
     startTransition(() => router.push('/login'))
+  }
+
+  async function saveCredentials() {
+    setSettingsMsg(null)
+    if (settingsTab === 'password' && newPassword !== confirmPassword) {
+      setSettingsMsg({ type: 'error', text: 'Passwords do not match' })
+      return
+    }
+    if (settingsTab === 'password' && newPassword.length < 6) {
+      setSettingsMsg({ type: 'error', text: 'Password must be at least 6 characters' })
+      return
+    }
+    setSettingsSaving(true)
+    const res = await fetch('/api/coach/update-credentials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        settingsTab === 'email'
+          ? { type: 'email', value: newEmail }
+          : { type: 'password', value: newPassword, currentPassword }
+      ),
+    })
+    setSettingsSaving(false)
+    const data = await res.json()
+    if (res.ok) {
+      setSettingsMsg({ type: 'success', text: settingsTab === 'email' ? 'Check your new email for a confirmation link' : 'Password updated successfully' })
+      setNewEmail(''); setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
+    } else {
+      setSettingsMsg({ type: 'error', text: data.error ?? 'Something went wrong' })
+    }
   }
 
   async function addCoach() {
@@ -339,9 +377,14 @@ export default function DashboardClient({
               <h1 className="text-2xl font-black text-white mt-0.5">Coach Dashboard</h1>
               <p className="text-slate-400 text-xs mt-0.5">{today}</p>
             </div>
-            <button onClick={signOut} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
-              <LogOut size={18} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowSettings(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
+                <Settings size={18} />
+              </button>
+              <button onClick={signOut} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
+                <LogOut size={18} />
+              </button>
+            </div>
           </div>
 
           {/* Stats row */}
@@ -1003,6 +1046,97 @@ export default function DashboardClient({
                 className="flex-1 py-2.5 rounded-xl bg-red-500/80 hover:bg-red-600 disabled:opacity-50 text-white font-bold text-sm transition-colors"
               >
                 {saving ? 'Deleting…' : 'Yes, Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Coach Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end" onClick={e => e.target === e.currentTarget && setShowSettings(false)}>
+          <div className="w-full rounded-t-3xl animate-slide-up" style={{ background: '#0d1433', border: '1px solid rgba(59,130,246,0.2)', borderBottom: 'none' }}>
+            <div className="p-5 space-y-4">
+              <div className="w-10 h-1 bg-white/20 rounded-full mx-auto" />
+              <div className="flex justify-between items-center">
+                <h3 className="font-black text-xl flex items-center gap-2"><Settings size={20} className="text-blue-400" /> Account Settings</h3>
+                <button onClick={() => setShowSettings(false)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
+              </div>
+
+              {/* Tab toggle */}
+              <div className="flex glass rounded-2xl p-1 gap-1">
+                {(['email', 'password'] as const).map(t => (
+                  <button
+                    key={t}
+                    onClick={() => { setSettingsTab(t); setSettingsMsg(null) }}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all capitalize ${settingsTab === t ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                    {t === 'email' ? '✉️ Change Email' : '🔒 Change Password'}
+                  </button>
+                ))}
+              </div>
+
+              {settingsTab === 'email' ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">New Email Address</label>
+                    <input
+                      type="email"
+                      placeholder="new@email.com"
+                      value={newEmail}
+                      onChange={e => setNewEmail(e.target.value)}
+                      className="w-full mt-1.5 glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500/50 placeholder-slate-600"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500">A confirmation link will be sent to your new address. Your email won't change until you click it.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Current Password</label>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={currentPassword}
+                      onChange={e => setCurrentPassword(e.target.value)}
+                      className="w-full mt-1.5 glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500/50 placeholder-slate-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">New Password</label>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      className="w-full mt-1.5 glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500/50 placeholder-slate-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Confirm New Password</label>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      className="w-full mt-1.5 glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500/50 placeholder-slate-600"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {settingsMsg && (
+                <p className={`text-sm font-bold text-center px-3 py-2 rounded-xl ${settingsMsg.type === 'success' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                  {settingsMsg.text}
+                </p>
+              )}
+
+              <button
+                onClick={saveCredentials}
+                disabled={settingsSaving || (settingsTab === 'email' ? !newEmail : !currentPassword || !newPassword || !confirmPassword)}
+                className="w-full py-3.5 rounded-2xl btn-blue disabled:opacity-50 text-white font-bold"
+              >
+                {settingsSaving ? 'Saving…' : settingsTab === 'email' ? 'Send Confirmation Email ✓' : 'Update Password ✓'}
               </button>
             </div>
           </div>
