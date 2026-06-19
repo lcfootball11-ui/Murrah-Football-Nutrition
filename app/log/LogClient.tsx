@@ -657,20 +657,19 @@ export default function LogClient({
       {/* Add modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end" onClick={e => e.target === e.currentTarget && resetModal()}>
-          <div className="w-full max-h-[92vh] overflow-y-auto rounded-t-3xl animate-slide-up" style={{ background: '#0d1433', border: '1px solid rgba(59,130,246,0.2)', borderBottom: 'none' }}>
-            <div className="p-5">
-              {/* Handle */}
-              <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5" />
+          <div className="w-full rounded-t-3xl animate-slide-up flex flex-col" style={{ background: '#0d1433', border: '1px solid rgba(59,130,246,0.2)', borderBottom: 'none', maxHeight: '92dvh' }}>
 
-              <div className="flex items-center justify-between mb-4">
+            {/* Sticky header — always visible above keyboard */}
+            <div className="px-5 pt-5 pb-3 shrink-0">
+              <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
+              <div className="flex items-center justify-between mb-3">
                 <h3 className="font-black text-xl text-white">Add Food</h3>
                 <button onClick={resetModal} className="glass rounded-xl p-2 text-slate-400 hover:text-white">
                   <X size={18} />
                 </button>
               </div>
-
-              {/* Mode toggle */}
-              <div className="flex glass rounded-2xl p-1 mb-5 gap-1">
+              {/* Mode toggle — pinned at top so keyboard never covers it */}
+              <div className="flex glass rounded-2xl p-1 gap-1">
                 <button
                   onClick={() => setMode('search')}
                   className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${mode === 'search' ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
@@ -690,6 +689,10 @@ export default function LogClient({
                   <ChevronDown size={13} /> Manual
                 </button>
               </div>
+            </div>
+
+            {/* Scrollable content area */}
+            <div className="overflow-y-auto px-5 pb-6 flex-1">
 
               {mode === 'restaurant' ? (
                 <div className="space-y-3">
@@ -811,8 +814,8 @@ export default function LogClient({
                   </button>
                 </div>
               )}
-            </div>
-          </div>
+            </div>{/* end scrollable content */}
+          </div>{/* end modal sheet */}
         </div>
       )}
 
