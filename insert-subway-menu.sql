@@ -1,6 +1,3 @@
--- Subway U.S. Nutrition Information - January 2026
--- 6" sandwiches (standard build with bread, protein, standard veggies & cheese)
-
 -- Cheesesteaks
 INSERT INTO custom_foods (name, portion, calories, protein, carbs, fat, source) VALUES
 ('Subway 6" Steak Philly', '6" sub', 510, 28, 43, 25, 'Subway Jan 2026'),
