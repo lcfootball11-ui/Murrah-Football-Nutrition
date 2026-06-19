@@ -22,7 +22,7 @@ export default function NutritionStreakBadge() {
     fetchStreak()
   }, [])
 
-  if (loading || streak === 0) return null
+  if (loading) return null
 
   return (
     <div className="glass rounded-2xl p-4 mb-3">
@@ -32,7 +32,9 @@ export default function NutritionStreakBadge() {
           <p className="text-sm font-bold text-white">
             {streak} day nutrition streak
           </p>
-          <p className="text-xs text-slate-400">calories + protein met</p>
+          <p className="text-xs text-slate-400">
+            {streak === 0 ? 'start your streak today' : 'calories + protein met'}
+          </p>
         </div>
       </div>
     </div>

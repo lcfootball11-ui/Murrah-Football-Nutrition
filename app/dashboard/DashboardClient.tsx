@@ -373,6 +373,33 @@ export default function DashboardClient({
         <WeightTrendChart />
       </div> */}
 
+      {/* Longest Nutrition Streak Card */}
+      {(() => {
+        const longestNutritionStreak = Math.max(0, ...Object.values(nutritionStreaks))
+        const athletesWithLongestStreak = athletes.filter(a => nutritionStreaks[a.id] === longestNutritionStreak)
+
+        return (
+          <div className="px-4 py-4 max-w-2xl mx-auto pb-4">
+            <div className="glass rounded-2xl p-4" style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)' }}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-purple-300 uppercase tracking-wide mb-1">💪 Nutrition Streak Leader</p>
+                  <p className="text-2xl font-black text-white mb-2">{longestNutritionStreak} days</p>
+                  <div className="flex flex-wrap gap-2">
+                    {athletesWithLongestStreak.map(a => (
+                      <span key={a.id} className="text-xs font-bold bg-purple-500/30 text-purple-200 px-2.5 py-1 rounded-full">
+                        {a.full_name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-4xl">🏆</div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       <div className="px-4 py-4 max-w-2xl mx-auto space-y-3 pb-4">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
