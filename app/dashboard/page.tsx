@@ -93,7 +93,7 @@ export default async function DashboardPage() {
   const nutritionStreaks: Record<string, number> = {}
   for (const id of athleteIds) {
     const athleteLogs = (allNutritionLogs ?? []).filter(l => l.user_id === id)
-    const target = (targets ?? []).find(t => t.user_id === id)
+    const target = (targetsRes.data ?? []).find(t => t.user_id === id)
     nutritionStreaks[id] = calcNutritionStreak(
       athleteLogs,
       target || { calories: 2500, protein: 150, plan: 'gain' },
