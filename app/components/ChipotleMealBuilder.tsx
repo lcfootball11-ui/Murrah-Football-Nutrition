@@ -98,10 +98,10 @@ export default function ChipotleMealBuilder({ onAdd, onClose }: { onAdd: (name: 
   const currentSingle = [base, protein, rice, beans][step]
 
   return (
-    <div className="flex flex-col h-full">
+    <div>
       {/* Running totals */}
       <div className="glass-blue rounded-2xl p-4 mb-4">
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex justify-between items-center">
           <div>
             <p className="text-xs font-bold text-blue-300 uppercase tracking-wide">Your Meal</p>
             <p className="text-2xl font-black text-white">{finalCal} <span className="text-sm font-bold text-slate-400">cal</span></p>
@@ -128,7 +128,7 @@ export default function ChipotleMealBuilder({ onAdd, onClose }: { onAdd: (name: 
       </div>
 
       {/* Options */}
-      <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+      <div className="space-y-2 mb-4">
         {step === 1 && (
           <button
             onClick={() => setExtraProtein(e => !e)}
