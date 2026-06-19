@@ -385,7 +385,7 @@ export default function DashboardClient({
             <div className="grid grid-cols-2 gap-3">
               {/* Nutrition Streak Leader */}
               <div className="glass rounded-2xl p-4" style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)' }}>
-                <p className="text-xs font-bold text-purple-300 uppercase tracking-wide mb-1">💪 Nutrition</p>
+                <p className="text-xs font-bold text-purple-300 uppercase tracking-wide mb-1">💪 Nutrition Streak</p>
                 <p className="text-2xl font-black text-white mb-2">{longestNutritionStreak}d</p>
                 <div className="flex flex-wrap gap-1.5">
                   {nutritionLeaders.map(a => (
@@ -397,7 +397,7 @@ export default function DashboardClient({
               </div>
               {/* Logging Streak Leader */}
               <div className="glass rounded-2xl p-4" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%)' }}>
-                <p className="text-xs font-bold text-blue-300 uppercase tracking-wide mb-1">🔥 Logging</p>
+                <p className="text-xs font-bold text-blue-300 uppercase tracking-wide mb-1">🔥 Logging Streak</p>
                 <p className="text-2xl font-black text-white mb-2">{longestLoggingStreak}d</p>
                 <div className="flex flex-wrap gap-1.5">
                   {loggingLeaders.map(a => (
