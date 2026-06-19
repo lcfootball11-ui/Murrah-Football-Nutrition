@@ -111,9 +111,11 @@ export default function LogClient({
   const [historyWeights, setHistoryWeights] = useState<{ log_date: string; weight_lbs: number }[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
   const [streak, setStreak] = useState(0)
+  const [nutritionStreak, setNutritionStreak] = useState<number | null>(null)
 
   useEffect(() => {
     fetch('/api/streak').then(r => r.json()).then(d => setStreak(d.streak ?? 0))
+    fetch('/api/nutrition-streak').then(r => r.json()).then(d => setNutritionStreak(d.streak ?? 0))
   }, [])
 
   const [query, setQuery] = useState('')
@@ -349,12 +351,20 @@ export default function LogClient({
             <h1 className="text-2xl font-black text-white mt-0.5">Hey, {firstName}!</h1>
             <p className="text-slate-400 text-xs mt-0.5">MustangUp 💪</p>
           </div>
-          {streak > 0 && (
-            <div className="streak-badge rounded-2xl px-3 py-2 text-center mr-10">
-              <p className="text-xl font-black text-white leading-none">{streak}</p>
-              <p className="text-xs font-bold text-blue-300 leading-none mt-0.5">🔥 logging</p>
-            </div>
-          )}
+          <div className="flex items-center gap-2 mr-10">
+            {streak > 0 && (
+              <div className="streak-badge rounded-2xl px-3 py-2 text-center">
+                <p className="text-xl font-black text-white leading-none">{streak}</p>
+                <p className="text-xs font-bold text-blue-300 leading-none mt-0.5">🔥 logging</p>
+              </div>
+            )}
+            {nutritionStreak !== null && (
+              <div className="rounded-2xl px-3 py-2 text-center" style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.35) 0%, rgba(168, 85, 247, 0.15) 100%)', border: '1px solid rgba(168,85,247,0.3)' }}>
+                <p className="text-xl font-black text-white leading-none">{nutritionStreak}</p>
+                <p className="text-xs font-bold text-purple-300 leading-none mt-0.5">💪 nutrition</p>
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowSettings(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
               <Settings size={18} />

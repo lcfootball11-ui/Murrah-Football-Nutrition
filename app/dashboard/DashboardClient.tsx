@@ -373,27 +373,39 @@ export default function DashboardClient({
         <WeightTrendChart />
       </div> */}
 
-      {/* Longest Nutrition Streak Card */}
+      {/* Streak Leader Cards - side by side */}
       {(() => {
         const longestNutritionStreak = Math.max(0, ...Object.values(nutritionStreaks))
-        const athletesWithLongestStreak = athletes.filter(a => nutritionStreaks[a.id] === longestNutritionStreak)
+        const nutritionLeaders = athletes.filter(a => nutritionStreaks[a.id] === longestNutritionStreak)
+        const longestLoggingStreak = Math.max(0, ...Object.values(streaks))
+        const loggingLeaders = athletes.filter(a => streaks[a.id] === longestLoggingStreak)
 
         return (
           <div className="px-4 py-4 max-w-2xl mx-auto pb-4">
-            <div className="glass rounded-2xl p-4" style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)' }}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-purple-300 uppercase tracking-wide mb-1">💪 Nutrition Streak Leader</p>
-                  <p className="text-2xl font-black text-white mb-2">{longestNutritionStreak} days</p>
-                  <div className="flex flex-wrap gap-2">
-                    {athletesWithLongestStreak.map(a => (
-                      <span key={a.id} className="text-xs font-bold bg-purple-500/30 text-purple-200 px-2.5 py-1 rounded-full">
-                        {a.full_name}
-                      </span>
-                    ))}
-                  </div>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Nutrition Streak Leader */}
+              <div className="glass rounded-2xl p-4" style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)' }}>
+                <p className="text-xs font-bold text-purple-300 uppercase tracking-wide mb-1">💪 Nutrition</p>
+                <p className="text-2xl font-black text-white mb-2">{longestNutritionStreak}d</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {nutritionLeaders.map(a => (
+                    <span key={a.id} className="text-xs font-bold bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded-full">
+                      {a.full_name.split(' ')[0]}
+                    </span>
+                  ))}
                 </div>
-                <div className="text-4xl">🏆</div>
+              </div>
+              {/* Logging Streak Leader */}
+              <div className="glass rounded-2xl p-4" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%)' }}>
+                <p className="text-xs font-bold text-blue-300 uppercase tracking-wide mb-1">🔥 Logging</p>
+                <p className="text-2xl font-black text-white mb-2">{longestLoggingStreak}d</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {loggingLeaders.map(a => (
+                    <span key={a.id} className="text-xs font-bold bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded-full">
+                      {a.full_name.split(' ')[0]}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
