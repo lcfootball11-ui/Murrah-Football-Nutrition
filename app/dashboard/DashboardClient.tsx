@@ -27,6 +27,7 @@ export default function DashboardClient({
   suppLogs,
   targets,
   streaks,
+  nutritionStreaks = {},
   today,
   weeklyLogs,
   staleWeights = {},
@@ -38,6 +39,7 @@ export default function DashboardClient({
   suppLogs: SuppLog[]
   targets: Target[]
   streaks: Record<string, number>
+  nutritionStreaks?: Record<string, number>
   today: string
   weeklyLogs: WeeklyLog[]
   staleWeights?: StaleWeights
@@ -415,6 +417,7 @@ export default function DashboardClient({
           const proTarget = target?.protein ?? 150
           const plan = target?.plan ?? 'gain'
           const athleteStreak = streaks[athlete.id] ?? 0
+          const athleteNutritionStreak = nutritionStreaks[athlete.id] ?? 0
           const calPct = pct(totals.cal, calTarget)
 
           const proteinMet = totals.pro >= proTarget * 0.9
@@ -464,6 +467,11 @@ export default function DashboardClient({
                   {athleteStreak > 0 && (
                     <div className="streak-badge rounded-xl px-2 py-1 text-center">
                       <p className="text-xs font-black text-white leading-none">{athleteStreak}🔥</p>
+                    </div>
+                  )}
+                  {athleteNutritionStreak > 0 && (
+                    <div className="streak-badge rounded-xl px-2 py-1 text-center" style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0.1) 100%)' }}>
+                      <p className="text-xs font-black text-purple-300 leading-none">{athleteNutritionStreak}💪</p>
                     </div>
                   )}
                   <span className="text-lg">{statusEmoji}</span>

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import DashboardClient from './DashboardClient'
+import { calcNutritionStreak } from '@/lib/nutrition-streak'
 
 export const dynamic = 'force-dynamic'
 
@@ -82,6 +83,24 @@ export default async function DashboardPage() {
     streaks[id] = calcStreak(dates, today)
   }
 
+  // Fetch nutrition logs and targets for calculating nutrition streaks
+  const { data: allNutritionLogs } = await admin
+    .from('nutrition_logs')
+    .select('user_id, log_date, calories, protein')
+    .in('user_id', athleteIds)
+
+  // Calculate nutrition streaks for all athletes
+  const nutritionStreaks: Record<string, number> = {}
+  for (const id of athleteIds) {
+    const athleteLogs = (allNutritionLogs ?? []).filter(l => l.user_id === id)
+    const target = (targets ?? []).find(t => t.user_id === id)
+    nutritionStreaks[id] = calcNutritionStreak(
+      athleteLogs,
+      target || { calories: 2500, protein: 150, plan: 'gain' },
+      today
+    )
+  }
+
   // Calculate stale weight logs (7+ days since last entry)
   const sevenDaysAgoWeight = new Date(today + 'T12:00:00')
   sevenDaysAgoWeight.setDate(sevenDaysAgoWeight.getDate() - 7)
@@ -112,6 +131,7 @@ export default async function DashboardPage() {
       suppLogs={suppLogsRes.data ?? []}
       targets={targetsRes.data ?? []}
       streaks={streaks}
+      nutritionStreaks={nutritionStreaks}
       today={today}
       weeklyLogs={weeklyLogsRes.data ?? []}
       staleWeights={staleWeights}

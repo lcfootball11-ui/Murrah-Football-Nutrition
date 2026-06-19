@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings } from 'lucide-react'
 import WeightTracker from './WeightTracker'
 import NotificationBanner from '@/app/components/NotificationBanner'
+import NutritionStreakBadge from '@/app/components/NutritionStreakBadge'
 
 type FoodResult = {
   fdcId: number
@@ -351,7 +352,7 @@ export default function LogClient({
           {streak > 0 && (
             <div className="streak-badge rounded-2xl px-3 py-2 text-center mr-10">
               <p className="text-xl font-black text-white leading-none">{streak}</p>
-              <p className="text-xs font-bold text-blue-300 leading-none mt-0.5">🔥 day{streak !== 1 ? 's' : ''}</p>
+              <p className="text-xs font-bold text-blue-300 leading-none mt-0.5">🔥 logging</p>
             </div>
           )}
           <div className="flex items-center gap-2">
@@ -472,6 +473,30 @@ export default function LogClient({
         {/* Weight Tracker */}
         {tab === 'today' && (
           <WeightTracker today={today} />
+        )}
+
+        {/* Logging Streak */}
+        {tab === 'today' && streak > 0 && (
+          <div className="px-4 py-0">
+            <div className="glass rounded-2xl p-4 mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔥</span>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-white">
+                    {streak} day logging streak
+                  </p>
+                  <p className="text-xs text-slate-400">keep tracking daily</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Nutrition Goals Streak */}
+        {tab === 'today' && (
+          <div className="px-4 py-0">
+            <NutritionStreakBadge />
+          </div>
         )}
 
         {/* Food log - today */}
