@@ -11,7 +11,7 @@ import ChipotleMealBuilder from '@/app/components/ChipotleMealBuilder'
 import SubwayMealBuilder from '@/app/components/SubwayMealBuilder'
 import DominosMealBuilder from '@/app/components/DominosMealBuilder'
 import CookOutMealBuilder from '@/app/components/CookOutMealBuilder'
-import FastFoodMealBuilder, { MCDONALDS_MENU, WENDYS_MENU, WHATABURGER_MENU, RALLYS_MENU } from '@/app/components/FastFoodMealBuilder'
+import FastFoodMealBuilder, { MCDONALDS_MENU, WENDYS_MENU, WHATABURGER_MENU, RALLYS_MENU, CHICKFILA_MENU, BOSTONS_MENU } from '@/app/components/FastFoodMealBuilder'
 
 type FoodResult = {
   fdcId: number
@@ -781,6 +781,26 @@ export default function LogClient({
                       <p className="text-xs text-slate-400">Big Buford, loaded fries & milkshakes</p>
                     </div>
                   </button>
+                  <button
+                    onClick={() => setMode('chickfila' as typeof mode)}
+                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
+                  >
+                    <span className="text-3xl">🐔</span>
+                    <div className="text-left">
+                      <p className="font-bold text-white">Chick-fil-A</p>
+                      <p className="text-xs text-slate-400">Sandwiches, nuggets, grilled chicken & shakes</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setMode('bostons' as typeof mode)}
+                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
+                  >
+                    <span className="text-3xl">🐟</span>
+                    <div className="text-left">
+                      <p className="font-bold text-white">Boston's Fish Supreme</p>
+                      <p className="text-xs text-slate-400">Fish, shrimp, wings & Cajun fries</p>
+                    </div>
+                  </button>
                 </div>
               ) : (mode as string) === 'chipotle' ? (
                 <ChipotleMealBuilder onAdd={addRestaurantMeal} onClose={resetModal} />
@@ -798,6 +818,10 @@ export default function LogClient({
                 <FastFoodMealBuilder restaurantName="Whataburger" menu={WHATABURGER_MENU} onAdd={addRestaurantMeal} />
               ) : (mode as string) === 'rallys' ? (
                 <FastFoodMealBuilder restaurantName="Rally's" menu={RALLYS_MENU} onAdd={addRestaurantMeal} />
+              ) : (mode as string) === 'chickfila' ? (
+                <FastFoodMealBuilder restaurantName="Chick-fil-A" menu={CHICKFILA_MENU} onAdd={addRestaurantMeal} />
+              ) : (mode as string) === 'bostons' ? (
+                <FastFoodMealBuilder restaurantName="Boston's Fish Supreme" menu={BOSTONS_MENU} onAdd={addRestaurantMeal} />
               ) : mode === 'search' ? (
                 <div className="space-y-3">
                   <input

@@ -271,6 +271,158 @@ export const RALLYS_MENU: FFCategory[] = [
   },
 ]
 
+export const CHICKFILA_MENU: FFCategory[] = [
+  {
+    emoji: '🍳', label: 'Breakfast',
+    items: [
+      { name: 'Egg White Grill',                     macros: { cal: 300, protein: 27, carbs: 29, fat: 8  } },
+      { name: 'Chick-n-Minis (4pc)',                 macros: { cal: 360, protein: 20, carbs: 41, fat: 13 } },
+      { name: 'Chicken Biscuit',                     macros: { cal: 460, protein: 19, carbs: 45, fat: 23 } },
+      { name: 'Spicy Chicken Biscuit',               macros: { cal: 450, protein: 19, carbs: 44, fat: 22 } },
+      { name: 'Chicken, Egg & Cheese Biscuit',       macros: { cal: 550, protein: 27, carbs: 48, fat: 28 } },
+      { name: 'Sausage, Egg & Cheese Biscuit',       macros: { cal: 620, protein: 22, carbs: 38, fat: 42 } },
+      { name: 'Bacon, Egg & Cheese Biscuit',         macros: { cal: 420, protein: 15, carbs: 38, fat: 23 } },
+      { name: 'Chicken, Egg & Cheese Muffin',        macros: { cal: 410, protein: 27, carbs: 36, fat: 18 } },
+      { name: 'Sausage, Egg & Cheese Muffin',        macros: { cal: 490, protein: 23, carbs: 29, fat: 32 } },
+      { name: 'Bacon, Egg & Cheese Muffin',          macros: { cal: 300, protein: 16, carbs: 28, fat: 13 } },
+      { name: 'Hash Brown Scramble Bowl',            macros: { cal: 470, protein: 29, carbs: 19, fat: 30 } },
+      { name: 'Hash Brown Scramble Burrito',         macros: { cal: 700, protein: 34, carbs: 51, fat: 40 } },
+      { name: 'Hash Browns',                         macros: { cal: 270, protein: 3,  carbs: 23, fat: 18 } },
+      { name: 'Berry Parfait',                       macros: { cal: 270, protein: 13, carbs: 35, fat: 9  } },
+    ],
+  },
+  {
+    emoji: '🍗', label: 'Sandwiches & Entrées',
+    items: [
+      { name: 'Chick-fil-A Chicken Sandwich',        macros: { cal: 420, protein: 29, carbs: 41, fat: 18 } },
+      { name: 'Chick-fil-A Deluxe Sandwich',         macros: { cal: 490, protein: 32, carbs: 43, fat: 22 } },
+      { name: 'Spicy Chicken Sandwich',              macros: { cal: 450, protein: 28, carbs: 45, fat: 19 } },
+      { name: 'Spicy Deluxe Sandwich',               macros: { cal: 540, protein: 34, carbs: 47, fat: 26 } },
+      { name: 'Grilled Chicken Sandwich',            macros: { cal: 390, protein: 28, carbs: 45, fat: 11 } },
+      { name: 'Grilled Chicken Club Sandwich',       macros: { cal: 520, protein: 37, carbs: 45, fat: 22 } },
+      { name: 'Honey Pepper Pimento Sandwich (CFA Filet)',     macros: { cal: 600, protein: 34, carbs: 53, fat: 30 } },
+      { name: 'Honey Pepper Pimento Sandwich (Spicy Filet)',   macros: { cal: 620, protein: 33, carbs: 56, fat: 31 } },
+      { name: 'Honey Pepper Pimento Sandwich (Grilled Filet)', macros: { cal: 450, protein: 30, carbs: 42, fat: 20 } },
+      { name: 'Grilled Cool Wrap',                   macros: { cal: 660, protein: 43, carbs: 32, fat: 45 } },
+      { name: 'Nuggets 8pc',                        macros: { cal: 250, protein: 27, carbs: 11, fat: 11 } },
+      { name: 'Nuggets 12pc',                       macros: { cal: 380, protein: 41, carbs: 17, fat: 17 } },
+      { name: 'Grilled Nuggets 8pc',                macros: { cal: 130, protein: 25, carbs: 1,  fat: 3  } },
+      { name: 'Grilled Nuggets 12pc',               macros: { cal: 200, protein: 38, carbs: 2,  fat: 4  } },
+      { name: 'Chick-n-Strips 3pc',                 macros: { cal: 310, protein: 29, carbs: 16, fat: 14 } },
+      { name: 'Chick-n-Strips 4pc',                 macros: { cal: 420, protein: 39, carbs: 21, fat: 19 } },
+    ],
+  },
+  {
+    emoji: '🥗', label: 'Salads',
+    items: [
+      { name: 'Cobb Salad',                         macros: { cal: 830, protein: 42, carbs: 31, fat: 60 } },
+      { name: 'Spicy Southwest Salad',              macros: { cal: 680, protein: 33, carbs: 27, fat: 49 } },
+      { name: 'Market Salad',                       macros: { cal: 550, protein: 28, carbs: 42, fat: 31 } },
+    ],
+  },
+  {
+    emoji: '🍟', label: 'Sides',
+    items: [
+      { name: 'Waffle Potato Fries (medium)',        macros: { cal: 420, protein: 5,  carbs: 45, fat: 24 } },
+      { name: 'Waffle Potato Fries (large)',         macros: { cal: 490, protein: 6,  carbs: 53, fat: 28 } },
+      { name: 'Mac & Cheese',                       macros: { cal: 450, protein: 20, carbs: 28, fat: 29 } },
+      { name: 'Chicken Noodle Soup',                macros: { cal: 190, protein: 11, carbs: 27, fat: 5  } },
+      { name: 'Chicken Tortilla Soup',              macros: { cal: 280, protein: 24, carbs: 31, fat: 7  } },
+      { name: 'Kale Crunch Side',                   macros: { cal: 170, protein: 4,  carbs: 13, fat: 12 } },
+      { name: 'Fruit Cup (small)',                  macros: { cal: 70,  protein: 1,  carbs: 16, fat: 0  } },
+      { name: 'Waffle Potato Chips',                macros: { cal: 220, protein: 3,  carbs: 25, fat: 13 } },
+    ],
+  },
+  {
+    emoji: '🍦', label: 'Treats & Shakes',
+    items: [
+      { name: 'Peach Milkshake',                    macros: { cal: 600, protein: 11, carbs: 101, fat: 18 } },
+      { name: 'Chocolate Milkshake',                macros: { cal: 600, protein: 12, carbs: 93,  fat: 22 } },
+      { name: 'Cookies & Cream Milkshake',          macros: { cal: 630, protein: 13, carbs: 91,  fat: 25 } },
+      { name: 'Vanilla Milkshake',                  macros: { cal: 580, protein: 13, carbs: 82,  fat: 23 } },
+      { name: 'Strawberry Milkshake',               macros: { cal: 560, protein: 10, carbs: 92,  fat: 18 } },
+      { name: 'Frosted Lemonade',                   macros: { cal: 350, protein: 7,  carbs: 67,  fat: 7  } },
+      { name: 'Frosted Coffee',                     macros: { cal: 260, protein: 7,  carbs: 45,  fat: 7  } },
+      { name: 'Icedream Cone',                      macros: { cal: 180, protein: 4,  carbs: 32,  fat: 4  } },
+      { name: 'Chocolate Fudge Brownie',            macros: { cal: 370, protein: 4,  carbs: 47,  fat: 21 } },
+      { name: 'Chocolate Chunk Cookie',             macros: { cal: 370, protein: 5,  carbs: 49,  fat: 17 } },
+    ],
+  },
+  {
+    emoji: '🥤', label: 'Drinks',
+    items: [
+      { name: 'Lemonade (large)',                   macros: { cal: 260, protein: 0,  carbs: 66,  fat: 0  } },
+      { name: 'Diet Lemonade (large)',              macros: { cal: 60,  protein: 0,  carbs: 15,  fat: 0  } },
+      { name: 'Sweet Tea (large)',                  macros: { cal: 120, protein: 0,  carbs: 31,  fat: 0  } },
+      { name: 'Iced Coffee',                        macros: { cal: 200, protein: 7,  carbs: 34,  fat: 4  } },
+      { name: '1% Chocolate Milk',                  macros: { cal: 140, protein: 7,  carbs: 23,  fat: 2  } },
+    ],
+  },
+]
+
+export const BOSTONS_MENU: FFCategory[] = [
+  {
+    emoji: '🐟', label: 'Fish',
+    items: [
+      { name: '(2pc) Swai Fish Combo',              macros: { cal: 400, protein: 20, carbs: 50, fat: 15 } },
+      { name: '(2pc) Tilapia Combo',                macros: { cal: 600, protein: 40, carbs: 50, fat: 20 } },
+      { name: '(2pc) Pantrout Combo',               macros: { cal: 600, protein: 40, carbs: 70, fat: 20 } },
+      { name: '(4pc) Pantrout',                     macros: { cal: 560, protein: 30, carbs: 50, fat: 20 } },
+      { name: '(4pc) Swai Fish',                    macros: { cal: 260, protein: 24, carbs: 20, fat: 10 } },
+      { name: 'Swai Fish Snack',                    macros: { cal: 250, protein: 15, carbs: 30, fat: 8  } },
+      { name: 'Tilapia Fish Snack',                 macros: { cal: 300, protein: 20, carbs: 30, fat: 15 } },
+      { name: 'Pantrout Fish Snack',                macros: { cal: 250, protein: 15, carbs: 20, fat: 12 } },
+      { name: 'Pantrout Nuggets',                   macros: { cal: 250, protein: 15, carbs: 30, fat: 10 } },
+      { name: 'Swai Fish Nuggets',                  macros: { cal: 250, protein: 15, carbs: 30, fat: 8  } },
+    ],
+  },
+  {
+    emoji: '🦐', label: 'Shrimp',
+    items: [
+      { name: 'Shrimp Dinner',                      macros: { cal: 600, protein: 35, carbs: 50, fat: 25 } },
+      { name: '(12pc) Shrimp',                      macros: { cal: 120, protein: 23, carbs: 2,  fat: 2  } },
+    ],
+  },
+  {
+    emoji: '🍗', label: 'Wings & Chicken',
+    items: [
+      { name: '(6pc) Wings Combo (w/ side)',         macros: { cal: 900, protein: 50, carbs: 70, fat: 50 } },
+      { name: '(6pc) Wings Combo',                  macros: { cal: 600, protein: 30, carbs: 50, fat: 30 } },
+      { name: '10 Wings Combo',                     macros: { cal: 800, protein: 40, carbs: 60, fat: 45 } },
+      { name: '10 Wings',                           macros: { cal: 800, protein: 45, carbs: 60, fat: 40 } },
+      { name: 'Chicken Tenders (4pc)',              macros: { cal: 600, protein: 25, carbs: 70, fat: 25 } },
+      { name: '(4pc) Halal Chicken Tenders',        macros: { cal: 400, protein: 25, carbs: 30, fat: 20 } },
+      { name: 'Chicken Nuggets (10pc)',             macros: { cal: 290, protein: 15, carbs: 20, fat: 18 } },
+      { name: '6 Shrimp & 6 Wings',                 macros: { cal: 450, protein: 35, carbs: 30, fat: 20 } },
+    ],
+  },
+  {
+    emoji: '🤝', label: 'Fish & Wing Combos',
+    items: [
+      { name: '(2pc) Swai Fish & (10) Wings',       macros: { cal: 860, protein: 48, carbs: 85, fat: 40 } },
+      { name: '(2pc) Swai Fish & (4) Wings Combo',  macros: { cal: 700, protein: 45, carbs: 60, fat: 30 } },
+      { name: '(2pc) Swai/Tilapia & (6) Wings',     macros: { cal: 650, protein: 40, carbs: 50, fat: 30 } },
+      { name: '(10pc) Shrimp & (2pc) Swai Fish',    macros: { cal: 550, protein: 42, carbs: 45, fat: 20 } },
+      { name: '(4pc) Shrimp & (2pc) Swai Fish',     macros: { cal: 400, protein: 30, carbs: 45, fat: 15 } },
+      { name: '(2pc) Swai Fish & (4pc) Shrimp',     macros: { cal: 350, protein: 30, carbs: 40, fat: 15 } },
+      { name: '(2pc) Swai/Tilapia & (6pc) Shrimp',  macros: { cal: 300, protein: 35, carbs: 10, fat: 12 } },
+    ],
+  },
+  {
+    emoji: '🍟', label: 'Sides',
+    items: [
+      { name: 'Large Cajun Ranch Fries',             macros: { cal: 900, protein: 20, carbs: 120, fat: 45 } },
+      { name: 'Small Cajun Ranch Fries',             macros: { cal: 500, protein: 10, carbs: 60,  fat: 25 } },
+      { name: 'Large Fries',                         macros: { cal: 365, protein: 4,  carbs: 66,  fat: 17 } },
+      { name: 'Potato Salad (Small)',                macros: { cal: 350, protein: 8,  carbs: 45,  fat: 15 } },
+      { name: 'Small Onion Rings',                  macros: { cal: 150, protein: 2,  carbs: 20,  fat: 8  } },
+      { name: 'Small Okra',                         macros: { cal: 150, protein: 4,  carbs: 16,  fat: 9  } },
+      { name: '3pc Hush Puppies',                   macros: { cal: 150, protein: 3,  carbs: 20,  fat: 8  } },
+      { name: 'Large Drink',                        macros: { cal: 200, protein: 0,  carbs: 50,  fat: 0  } },
+    ],
+  },
+]
+
 export default function FastFoodMealBuilder({
   restaurantName,
   menu,
