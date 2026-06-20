@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
 
   try {
     // Fetch from USDA
-    const usdaUrl = `${USDA_BASE}/foods/search?query=${encodeURIComponent(query)}&dataType=Survey%20(FNDDS),SR%20Legacy&pageSize=10&api_key=DEMO_KEY`
+    const apiKey = process.env.USDA_API_KEY ?? 'DEMO_KEY'
+    const usdaUrl = `${USDA_BASE}/foods/search?query=${encodeURIComponent(query)}&dataType=Survey%20(FNDDS),SR%20Legacy,Branded&pageSize=15&api_key=${apiKey}`
     const usdaRes = await fetch(usdaUrl, { next: { revalidate: 3600 } })
     const usdaData = await usdaRes.json()
 
@@ -67,6 +68,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ foods })
   } catch (error) {
     console.error('Food search error:', error)
-    return NextResponse.json({ foods: [] }, { status: 500 })
+    // Still try to return custom foods if USDA fails
+    try {
+      const supabase = getSupabaseClient()
+      const { data: customFoods } = await supabase
+        .from('custom_foods')
+        .select('*')
+        .or(`name.ilike.%${query}%,source.ilike.%${query}%`)
+        .limit(10)
+      const mapped = (customFoods ?? []).map((f: Record<string, unknown>) => ({
+        fdcId: f.id, description: `${f.source} - ${f.name} (${f.portion})`,
+        brandOwner: f.source, servingSize: 1, servingSizeUnit: f.portion,
+        calories: f.calories, protein: f.protein, carbs: f.carbs, fat: f.fat, source: f.source,
+      }))
+      return NextResponse.json({ foods: mapped })
+    } catch {
+      return NextResponse.json({ foods: [] })
+    }
   }
 }
