@@ -23,7 +23,9 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = adminClient()
-  const { data, error } = await admin.from('nutrition_logs').insert({
+
+  // Build insert — only include fiber if it's provided (requires DB migration add-fiber-tracking.sql)
+  const insertData: Record<string, unknown> = {
     user_id: user.id,
     log_date,
     meal_name,
@@ -31,9 +33,13 @@ export async function POST(request: NextRequest) {
     protein,
     carbs,
     fat,
-    fiber: fiber ?? 0,
     entry_method,
-  }).select().single()
+  }
+  if (fiber !== undefined && fiber !== null) {
+    insertData.fiber = fiber
+  }
+
+  const { data, error } = await admin.from('nutrition_logs').insert(insertData).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ data })
