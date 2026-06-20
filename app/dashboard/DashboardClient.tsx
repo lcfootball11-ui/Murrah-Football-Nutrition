@@ -70,6 +70,7 @@ export default function DashboardClient({
   const [lbSort, setLbSort] = useState<'overall' | 'calories' | 'protein' | 'streak'>('overall')
   const [lbAtRisk, setLbAtRisk] = useState(false)
   const [lbSortTooltip, setLbSortTooltip] = useState<string | null>(null)
+  const [lbExpanded, setLbExpanded] = useState(false)
   const lbTouchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [newEmail, setNewEmail] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
@@ -598,7 +599,7 @@ export default function DashboardClient({
               </div>
             )}
             <div className="space-y-3">
-              {displayed.map((entry, idx) => {
+              {displayed.filter((_, idx) => idx < 3 || lbExpanded).map((entry, idx) => {
                 const { athlete, overallScore, calPctVal, proPctVal, streak, spark, daysWithData } = entry
                 const sortScore = lbSort === 'calories' ? calPctVal : lbSort === 'protein' ? proPctVal : lbSort === 'streak' ? streak : overallScore
                 const badgeColor = overallScore >= 90 ? 'bg-green-500/20 text-green-300 border-green-500/30'
@@ -649,6 +650,18 @@ export default function DashboardClient({
                 )
               })}
             </div>
+            {displayed.length > 3 && (
+              <button
+                onClick={() => setLbExpanded(v => !v)}
+                className="w-full mt-3 py-2.5 glass rounded-2xl text-xs font-bold text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center gap-2"
+              >
+                {lbExpanded ? (
+                  <><ChevronUp size={14} /> Show less</>
+                ) : (
+                  <><ChevronDown size={14} /> Show {displayed.length - 3} more</>
+                )}
+              </button>
+            )}
           </div>
         )
       })()}
