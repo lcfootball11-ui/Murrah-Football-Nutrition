@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History, Settings } from 'lucide-react'
@@ -69,6 +69,8 @@ export default function DashboardClient({
   const [lbPeriod, setLbPeriod] = useState<'today' | 'week'>('today')
   const [lbSort, setLbSort] = useState<'overall' | 'calories' | 'protein' | 'streak'>('overall')
   const [lbAtRisk, setLbAtRisk] = useState(false)
+  const [lbSortTooltip, setLbSortTooltip] = useState<string | null>(null)
+  const lbTouchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [newEmail, setNewEmail] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -520,10 +522,17 @@ export default function DashboardClient({
           ? sorted.filter(a => a.overallScore < 70 || a.daysWithData === 0)
           : sorted
 
+        const sortLabels: Record<string, string> = {
+          overall: 'Overall Score',
+          calories: 'Calorie %',
+          protein: 'Protein %',
+          streak: 'Streak',
+        }
+
         return (
-          <div className="px-4 py-4 max-w-2xl mx-auto pb-4">
+          <div className="px-4 py-4 max-w-2xl mx-auto pb-2">
             {/* Header */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <p className="text-sm font-black text-slate-200 uppercase tracking-wide">🏆 Top Performers</p>
               <button
                 onClick={() => setLbAtRisk(v => !v)}
@@ -533,81 +542,102 @@ export default function DashboardClient({
               </button>
             </div>
 
-            {/* Period + Sort toggles */}
-            <div className="flex gap-2 mb-3">
-              <div className="flex glass rounded-2xl p-1 gap-1 flex-1">
-                {(['today', 'week'] as const).map(p => (
+            {/* Period toggle */}
+            <div className="flex glass rounded-2xl p-1 gap-1 mb-3">
+              {(['today', 'week'] as const).map(p => (
+                <button
+                  key={p}
+                  onClick={() => setLbPeriod(p)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${lbPeriod === p ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  {p === 'today' ? 'Today' : 'This Week'}
+                </button>
+              ))}
+            </div>
+
+            {/* Sort toggle — emoji buttons with tooltip */}
+            <div className="flex glass rounded-2xl p-1 gap-1 mb-5">
+              {([['overall', '⭐', 'Overall Score'], ['calories', '🔥', 'Calories'], ['protein', '💪', 'Protein'], ['streak', '📅', 'Streak']] as const).map(([key, icon, label]) => (
+                <div key={key} className="relative flex-1">
+                  {lbSortTooltip === key && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 bg-slate-800 border border-white/10 text-white text-xs font-bold rounded-lg whitespace-nowrap z-10 pointer-events-none shadow-lg">
+                      {label}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800" />
+                    </div>
+                  )}
                   <button
-                    key={p}
-                    onClick={() => setLbPeriod(p)}
-                    className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all capitalize ${lbPeriod === p ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
-                  >
-                    {p === 'today' ? 'Today' : 'This Week'}
-                  </button>
-                ))}
-              </div>
-              <div className="flex glass rounded-2xl p-1 gap-1 flex-1">
-                {([['overall', '⭐'], ['calories', '🔥'], ['protein', '💪'], ['streak', '📅']] as const).map(([key, icon]) => (
-                  <button
-                    key={key}
                     onClick={() => setLbSort(key as typeof lbSort)}
-                    className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all ${lbSort === key ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
-                    title={key.charAt(0).toUpperCase() + key.slice(1)}
+                    onMouseEnter={() => setLbSortTooltip(key)}
+                    onMouseLeave={() => setLbSortTooltip(null)}
+                    onTouchStart={() => {
+                      if (lbTouchTimer.current) clearTimeout(lbTouchTimer.current)
+                      lbTouchTimer.current = setTimeout(() => setLbSortTooltip(key), 400)
+                    }}
+                    onTouchEnd={() => {
+                      if (lbTouchTimer.current) clearTimeout(lbTouchTimer.current)
+                      setTimeout(() => setLbSortTooltip(null), 1400)
+                    }}
+                    className={`w-full py-2 rounded-xl text-sm font-bold transition-all ${lbSort === key ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
                   >
-                    {icon}
+                    {lbSort === key ? label : icon}
                   </button>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
 
             {/* Ranked rows */}
             {displayed.length === 0 && (
-              <div className="glass rounded-2xl py-8 text-center">
+              <div className="glass rounded-2xl py-10 text-center">
                 <p className="text-slate-500 text-sm">No athletes at risk 🎉</p>
               </div>
             )}
-            <div className="space-y-2">
+            <div className="space-y-3">
               {displayed.map((entry, idx) => {
                 const { athlete, overallScore, calPctVal, proPctVal, streak, spark, daysWithData } = entry
+                const sortScore = lbSort === 'calories' ? calPctVal : lbSort === 'protein' ? proPctVal : lbSort === 'streak' ? streak : overallScore
                 const badgeColor = overallScore >= 90 ? 'bg-green-500/20 text-green-300 border-green-500/30'
                   : overallScore >= 70 ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
                   : daysWithData === 0 ? 'bg-slate-500/20 text-slate-400 border-slate-500/20'
                   : 'bg-red-500/20 text-red-300 border-red-500/30'
                 const badgeLabel = overallScore >= 90 ? 'On Track' : overallScore >= 70 ? 'Close' : daysWithData === 0 ? 'No Log' : 'Behind'
                 const rankColor = idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-600' : 'text-slate-600'
+                const scoreColor = overallScore >= 90 ? 'text-green-400' : overallScore >= 70 ? 'text-yellow-400' : daysWithData === 0 ? 'text-slate-500' : 'text-red-400'
 
                 return (
-                  <div key={athlete.id} className="glass rounded-2xl px-4 py-3 flex items-center gap-3">
-                    <span className={`text-sm font-black w-5 text-center shrink-0 ${rankColor}`}>{idx + 1}</span>
-                    <div className="w-8 h-8 glass-blue rounded-xl flex items-center justify-center font-black text-blue-300 text-xs shrink-0">
-                      {athlete.full_name.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-bold text-sm text-white truncate">{athlete.full_name.split(' ')[0]} {athlete.full_name.split(' ').slice(-1)[0]}</p>
-                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${badgeColor}`}>{badgeLabel}</span>
+                  <div key={athlete.id} className="glass rounded-2xl px-4 py-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className={`text-base font-black w-6 text-center shrink-0 ${rankColor}`}>{idx + 1}</span>
+                      <div className="w-9 h-9 glass-blue rounded-xl flex items-center justify-center font-black text-blue-300 text-sm shrink-0">
+                        {athlete.full_name.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase()}
                       </div>
-                      {/* Spark line */}
-                      <div className="flex items-end gap-0.5 h-5">
-                        {spark.map((val, si) => (
-                          <div key={si} className="flex-1 bg-white/10 rounded-sm overflow-hidden h-full flex items-end">
-                            <div
-                              className="w-full rounded-sm"
-                              style={{ height: `${val}%`, background: val >= 90 ? '#22c55e' : val > 0 ? '#3b82f6' : 'transparent' }}
-                            />
-                          </div>
-                        ))}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-white truncate">{athlete.full_name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${badgeColor}`}>{badgeLabel}</span>
+                          {streak > 0 && <span className="text-xs text-orange-400 font-bold">{streak} day streak 🔥</span>}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className={`text-xl font-black ${scoreColor}`}>
+                          {lbSort === 'streak' ? `${sortScore}d` : `${Math.min(sortScore, 100)}%`}
+                        </p>
+                        <p className="text-xs text-slate-500">{sortLabels[lbSort]}</p>
                       </div>
                     </div>
-                    <div className="shrink-0 text-right space-y-0.5">
-                      <div className="flex items-center gap-2 justify-end">
-                        <span className="text-xs text-slate-500">🔥{calPctVal}%</span>
-                        <span className="text-xs text-slate-500">💪{proPctVal}%</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 justify-end">
-                        <span className={`text-sm font-black ${overallScore >= 90 ? 'text-green-400' : overallScore >= 70 ? 'text-yellow-400' : daysWithData === 0 ? 'text-slate-500' : 'text-red-400'}`}>{overallScore}%</span>
-                        {streak > 0 && <span className="text-xs text-orange-400">{streak}🔥</span>}
-                      </div>
+                    {/* Spark line */}
+                    <div className="flex items-end gap-1 h-7">
+                      {spark.map((val, si) => (
+                        <div key={si} className="flex-1 bg-white/10 rounded-sm overflow-hidden h-full flex items-end">
+                          <div
+                            className="w-full rounded-sm transition-all"
+                            style={{ height: `${Math.max(val, val > 0 ? 8 : 0)}%`, background: val >= 90 ? '#22c55e' : val > 0 ? '#3b82f6' : 'transparent' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-between mt-1.5">
+                      <span className="text-xs text-slate-600">7 days ago</span>
+                      <span className="text-xs text-slate-600">Today</span>
                     </div>
                   </div>
                 )
