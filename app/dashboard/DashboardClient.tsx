@@ -8,6 +8,7 @@ import NotificationBanner from '@/app/components/NotificationBanner'
 // import WeightTrendChart from './WeightTrendChart' // TODO: Re-enable when weight data is more robust
 
 type Athlete = { id: string; full_name: string; email?: string; phone_number?: string | null; reminder_enabled?: boolean }
+type Coach = { id: string; full_name: string; email?: string }
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
 type SuppLog = { user_id: string; supplement_name: string; taken: boolean }
 type Target = { user_id: string; calories: number; protein: number; carbs: number; fat: number; supplements: string[]; plan: 'gain' | 'loss'; target_weight?: number; goal_weight?: number }
@@ -22,6 +23,7 @@ function pct(val: number, target: number) {
 
 export default function DashboardClient({
   coachName,
+  coaches = [],
   athletes,
   logs,
   suppLogs,
@@ -34,6 +36,7 @@ export default function DashboardClient({
   latestWeights = {},
 }: {
   coachName: string
+  coaches?: Coach[]
   athletes: Athlete[]
   logs: Log[]
   suppLogs: SuppLog[]
@@ -65,6 +68,7 @@ export default function DashboardClient({
   const [tempPasswords, setTempPasswords] = useState<Record<string, string>>({})
   const [generatingPassword, setGeneratingPassword] = useState<string | null>(null)
   const [showSettings, setShowSettings] = useState(false)
+  const [showCoaches, setShowCoaches] = useState(false)
   const [settingsTab, setSettingsTab] = useState<'email' | 'password'>('email')
   const [lbPeriod, setLbPeriod] = useState<'today' | 'week'>('today')
   const [lbSort, setLbSort] = useState<'overall' | 'calories' | 'protein' | 'streak'>('overall')
@@ -384,6 +388,9 @@ export default function DashboardClient({
               <p className="text-slate-400 text-xs mt-0.5">{today}</p>
             </div>
             <div className="flex items-center gap-2">
+              <button onClick={() => setShowCoaches(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors" title="Coaches">
+                <Users size={18} />
+              </button>
               <button onClick={() => setShowSettings(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
                 <Settings size={18} />
               </button>
@@ -1262,6 +1269,36 @@ export default function DashboardClient({
               >
                 {saving ? 'Deleting…' : 'Yes, Remove'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Coaches List Modal */}
+      {showCoaches && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end" onClick={e => e.target === e.currentTarget && setShowCoaches(false)}>
+          <div className="w-full rounded-t-3xl p-5 space-y-4 animate-slide-up" style={{ background: '#0d1433', border: '1px solid rgba(59,130,246,0.2)', borderBottom: 'none' }}>
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto" />
+            <div className="flex justify-between items-center">
+              <h3 className="font-black text-xl flex items-center gap-2"><Users size={20} className="text-blue-400" /> Coaching Staff</h3>
+              <button onClick={() => setShowCoaches(false)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
+            </div>
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {coaches.length === 0 && (
+                <p className="text-slate-500 text-sm text-center py-6">No coaches found</p>
+              )}
+              {coaches.map(coach => (
+                <div key={coach.id} className="glass rounded-2xl px-4 py-3 flex items-center gap-3">
+                  <div className="w-9 h-9 glass-blue rounded-xl flex items-center justify-center font-black text-blue-300 text-sm shrink-0">
+                    {coach.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-white">{coach.full_name}</p>
+                    {coach.email && <p className="text-xs text-slate-400 truncate">{coach.email}</p>}
+                  </div>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/30 shrink-0">Coach</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

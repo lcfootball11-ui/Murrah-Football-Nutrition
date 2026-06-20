@@ -45,6 +45,12 @@ export default async function DashboardPage() {
     .eq('role', 'athlete')
     .order('full_name')
 
+  const { data: coaches } = await admin
+    .from('profiles')
+    .select('id, full_name, email')
+    .eq('role', 'coach')
+    .order('full_name')
+
   const athleteIds = (athletes ?? []).map(a => a.id)
 
   // Calculate date range for last 7 days
@@ -126,6 +132,7 @@ export default async function DashboardPage() {
   return (
     <DashboardClient
       coachName={profile.full_name}
+      coaches={coaches ?? []}
       athletes={athletes ?? []}
       logs={logsRes.data ?? []}
       suppLogs={suppLogsRes.data ?? []}
