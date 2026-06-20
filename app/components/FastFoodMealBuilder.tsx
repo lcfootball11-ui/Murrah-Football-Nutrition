@@ -751,6 +751,98 @@ export const BRENTS_MENU: FFCategory[] = [
   },
 ]
 
+export const PIGANDPINT_MENU: FFCategory[] = [
+  {
+    emoji: '🍖', label: 'Small Plates',
+    items: [
+      { name: 'Fried Boudin Balls',            macros: { cal: 450,  protein: 18, carbs: 38, fat: 24 } },
+      { name: 'Pork Belly Corn Dogs (2)',       macros: { cal: 520,  protein: 20, carbs: 42, fat: 28 } },
+      { name: 'Pimento Cheese',                macros: { cal: 480,  protein: 14, carbs: 22, fat: 38 } },
+      { name: 'Chips & Queso',                 macros: { cal: 420,  protein: 12, carbs: 48, fat: 20 } },
+      { name: 'Sausage & Cheese Plate',        macros: { cal: 550,  protein: 28, carbs: 18, fat: 40 } },
+    ],
+  },
+  {
+    emoji: '🍟', label: 'Disco Fries',
+    items: [
+      { name: 'Pulled Pork Disco Fries',       macros: { cal: 850,  protein: 32, carbs: 88, fat: 36 } },
+      { name: 'Smoked Chicken Disco Fries',    macros: { cal: 820,  protein: 38, carbs: 86, fat: 32 } },
+      { name: 'Brisket Disco Fries',           macros: { cal: 920,  protein: 38, carbs: 90, fat: 42 } },
+    ],
+  },
+  {
+    emoji: '🧀', label: 'Nachos',
+    items: [
+      { name: 'Pulled Pork BBQ Nachos',        macros: { cal: 920,  protein: 38, carbs: 82, fat: 42 } },
+      { name: 'Smoked Chicken BBQ Nachos',     macros: { cal: 900,  protein: 42, carbs: 80, fat: 40 } },
+      { name: 'Brisket BBQ Nachos',            macros: { cal: 980,  protein: 42, carbs: 84, fat: 48 } },
+    ],
+  },
+  {
+    emoji: '🌮', label: 'Tacos',
+    items: [
+      { name: 'Brisket BBQ Tacos',             macros: { cal: 520,  protein: 28, carbs: 44, fat: 22 } },
+      { name: 'Pulled Pork BBQ Tacos',         macros: { cal: 480,  protein: 24, carbs: 44, fat: 18 } },
+      { name: 'Smoked Chicken BBQ Tacos',      macros: { cal: 480,  protein: 28, carbs: 44, fat: 16 } },
+      { name: 'Fried Green Tomato Tacos',      macros: { cal: 420,  protein: 8,  carbs: 56, fat: 18 } },
+      { name: 'BBQ Taco Sampler (3)',          macros: { cal: 580,  protein: 28, carbs: 54, fat: 22 } },
+    ],
+  },
+  {
+    emoji: '🥪', label: 'Sandwiches',
+    items: [
+      { name: 'BBQ Pork Sandwich',             macros: { cal: 680,  protein: 35, carbs: 58, fat: 24 } },
+      { name: 'BBQ Chicken Sandwich',          macros: { cal: 650,  protein: 40, carbs: 56, fat: 20 } },
+      { name: 'BBQ Brisket Sandwich',          macros: { cal: 720,  protein: 38, carbs: 58, fat: 28 } },
+      { name: 'Fried Bologna Sandwich',        macros: { cal: 780,  protein: 30, carbs: 52, fat: 44 } },
+      { name: 'Fried Green Tomato BLT',        macros: { cal: 650,  protein: 18, carbs: 62, fat: 34 } },
+      { name: 'Smoked Chicken Salad Sandwich', macros: { cal: 620,  protein: 32, carbs: 52, fat: 28 } },
+      { name: 'The Bacon Melt',                macros: { cal: 950,  protein: 52, carbs: 48, fat: 58 } },
+      { name: 'Boudin Burger',                 macros: { cal: 820,  protein: 42, carbs: 50, fat: 46 } },
+      { name: 'The P&P Reuben',               macros: { cal: 780,  protein: 38, carbs: 54, fat: 38 } },
+    ],
+  },
+  {
+    emoji: '🥗', label: 'Salads',
+    items: [
+      { name: 'BLT Salad',                     macros: { cal: 480,  protein: 20, carbs: 28, fat: 32 } },
+      { name: 'House Salad',                   macros: { cal: 220,  protein: 6,  carbs: 22, fat: 12 } },
+      { name: 'Smoked Chicken Caesar Salad',   macros: { cal: 520,  protein: 36, carbs: 24, fat: 28 } },
+    ],
+  },
+  {
+    emoji: '🔥', label: "'Que Plates",
+    items: [
+      { name: 'Baby Back Ribs (Half Slab)',    macros: { cal: 750,  protein: 52, carbs: 22, fat: 46 } },
+      { name: 'Baby Back Ribs (Full Slab)',    macros: { cal: 1450, protein: 104, carbs: 44, fat: 92 } },
+      { name: 'Pulled Pork Plate',             macros: { cal: 720,  protein: 42, carbs: 48, fat: 30 } },
+      { name: 'Brisket Plate',                 macros: { cal: 850,  protein: 52, carbs: 46, fat: 40 } },
+      { name: 'Smoked Half Chicken Plate',     macros: { cal: 780,  protein: 58, carbs: 44, fat: 32 } },
+      { name: "'Que Sampler Platter",          macros: { cal: 1100, protein: 72, carbs: 52, fat: 56 } },
+      { name: 'Pitmaster Sampler',             macros: { cal: 1400, protein: 90, carbs: 56, fat: 78 } },
+    ],
+  },
+  {
+    emoji: '🍽️', label: 'Sides',
+    items: [
+      { name: 'French Fries',                  macros: { cal: 320,  protein: 4,  carbs: 44, fat: 14 } },
+      { name: 'Collard Greens',                macros: { cal: 120,  protein: 4,  carbs: 12, fat: 6  } },
+      { name: 'Smoked Tomato Cole Slaw',       macros: { cal: 180,  protein: 2,  carbs: 20, fat: 10 } },
+      { name: 'Potato Salad',                  macros: { cal: 250,  protein: 4,  carbs: 28, fat: 14 } },
+      { name: 'Smokehouse Beans',              macros: { cal: 200,  protein: 8,  carbs: 34, fat: 4  } },
+      { name: 'Pork Rinds',                    macros: { cal: 160,  protein: 16, carbs: 0,  fat: 10 } },
+      { name: 'Fried Green Tomatoes',          macros: { cal: 280,  protein: 4,  carbs: 32, fat: 14 } },
+    ],
+  },
+  {
+    emoji: '🍮', label: 'Desserts',
+    items: [
+      { name: 'Banana Foster Pudding',         macros: { cal: 380,  protein: 6,  carbs: 58, fat: 14 } },
+      { name: 'White Choc CranBerry Bread Pudding', macros: { cal: 420, protein: 8, carbs: 62, fat: 16 } },
+    ],
+  },
+]
+
 export default function FastFoodMealBuilder({
   restaurantName,
   menu,

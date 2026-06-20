@@ -11,7 +11,7 @@ import ChipotleMealBuilder from '@/app/components/ChipotleMealBuilder'
 import SubwayMealBuilder from '@/app/components/SubwayMealBuilder'
 import DominosMealBuilder from '@/app/components/DominosMealBuilder'
 import CookOutMealBuilder from '@/app/components/CookOutMealBuilder'
-import FastFoodMealBuilder, { MCDONALDS_MENU, WENDYS_MENU, WHATABURGER_MENU, RALLYS_MENU, CHICKFILA_MENU, BOSTONS_MENU, LONGHORN_MENU, MCALISTERS_MENU, BRENTS_MENU } from '@/app/components/FastFoodMealBuilder'
+import FastFoodMealBuilder, { MCDONALDS_MENU, WENDYS_MENU, WHATABURGER_MENU, RALLYS_MENU, CHICKFILA_MENU, BOSTONS_MENU, LONGHORN_MENU, MCALISTERS_MENU, BRENTS_MENU, PIGANDPINT_MENU } from '@/app/components/FastFoodMealBuilder'
 
 type FoodResult = {
   fdcId: number
@@ -760,6 +760,7 @@ export default function LogClient({
                     { mode: 'longhorn',    emoji: '🤠', name: 'LongHorn Steakhouse',      desc: 'Steaks, chicken, seafood, soups & salads' },
                     { mode: 'mcalisters',  emoji: '🥙', name: "McAlister's Deli",         desc: 'Sandwiches, spuds, soups & salads' },
                     { mode: 'brents',      emoji: '🧁', name: "Brent's Drugs",            desc: 'Classic diner — burgers, shakes & soda fountain' },
+                    { mode: 'pigandpint',  emoji: '🐷', name: "The Pig & Pint",            desc: 'Award-winning BBQ — ribs, brisket, pulled pork & tacos' },
                   ]
                     .filter(r => r.name.toLowerCase().includes(restaurantSearch.toLowerCase()) || r.desc.toLowerCase().includes(restaurantSearch.toLowerCase()))
                     .map(r => (
@@ -803,6 +804,8 @@ export default function LogClient({
                 <FastFoodMealBuilder restaurantName="McAlister's Deli" menu={MCALISTERS_MENU} onAdd={addRestaurantMeal} />
               ) : (mode as string) === 'brents' ? (
                 <FastFoodMealBuilder restaurantName="Brent's Drugs" menu={BRENTS_MENU} onAdd={addRestaurantMeal} />
+              ) : (mode as string) === 'pigandpint' ? (
+                <FastFoodMealBuilder restaurantName="The Pig & Pint" menu={PIGANDPINT_MENU} onAdd={addRestaurantMeal} />
               ) : mode === 'search' ? (
                 <div className="space-y-3">
                   <input
