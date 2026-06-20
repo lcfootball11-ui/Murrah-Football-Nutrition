@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { meal_name, calories, protein, carbs, fat, entry_method, log_date } = body
+  const { meal_name, calories, protein, carbs, fat, fiber, entry_method, log_date } = body
 
   if (!meal_name || calories === undefined) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
     protein,
     carbs,
     fat,
+    fiber: fiber ?? 0,
     entry_method,
   }).select().single()
 

@@ -32,6 +32,7 @@ type NutritionLog = {
   protein: number
   carbs: number
   fat: number
+  fiber?: number
   entry_method: 'search' | 'manual'
 }
 
@@ -53,6 +54,7 @@ type Targets = {
   protein: number
   carbs: number
   fat: number
+  fiber?: number | null
   supplements: string[]
 } | null
 
@@ -135,7 +137,7 @@ export default function LogClient({
   const [servings, setServings] = useState('1')
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const [manual, setManual] = useState({ meal_name: '', calories: '', protein: '', carbs: '', fat: '' })
+  const [manual, setManual] = useState({ meal_name: '', calories: '', protein: '', carbs: '', fat: '', fiber: '' })
   const [restaurantSearch, setRestaurantSearch] = useState('')
   const [showCalTooltip, setShowCalTooltip] = useState(false)
   const [showProteinTooltip, setShowProteinTooltip] = useState(false)
@@ -160,8 +162,8 @@ export default function LogClient({
   }, [])
 
   const totals = logs.reduce(
-    (acc, l) => ({ calories: acc.calories + l.calories, protein: acc.protein + l.protein, carbs: acc.carbs + l.carbs, fat: acc.fat + l.fat }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    (acc, l) => ({ calories: acc.calories + l.calories, protein: acc.protein + l.protein, carbs: acc.carbs + l.carbs, fat: acc.fat + l.fat, fiber: acc.fiber + (l.fiber ?? 0) }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
   )
 
   const calTarget = targets?.calories ?? 2500
@@ -247,6 +249,7 @@ export default function LogClient({
       protein: parseFloat(manual.protein) || 0,
       carbs: parseFloat(manual.carbs) || 0,
       fat: parseFloat(manual.fat) || 0,
+      fiber: parseFloat(manual.fiber) || 0,
       entry_method: 'manual',
     }
     const res = await fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) })
@@ -288,7 +291,7 @@ export default function LogClient({
 
   function resetModal() {
     setShowAddModal(false); setQuery(''); setResults([]); setSelected(null)
-    setServings('1'); setManual({ meal_name: '', calories: '', protein: '', carbs: '', fat: '' })
+    setServings('1'); setManual({ meal_name: '', calories: '', protein: '', carbs: '', fat: '', fiber: '' })
     setMode('search')
   }
 
@@ -491,10 +494,13 @@ export default function LogClient({
         {tab === 'today' && (
           <div className="glass rounded-2xl p-5">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Macros</p>
-            <div className="grid grid-cols-3 gap-4">
+            <div className={`grid gap-4 ${profile.role === 'coach' ? 'grid-cols-4' : 'grid-cols-3'}`}>
               <MacroRing label="Protein" value={Math.round(totals.protein)} target={targets?.protein ?? 150} color="#3b82f6" onInfo={() => setShowProteinTooltip(v => !v)} />
               <MacroRing label="Carbs" value={Math.round(totals.carbs)} target={targets?.carbs ?? 300} color="#94a3b8" />
               <MacroRing label="Fat" value={Math.round(totals.fat)} target={targets?.fat ?? 80} color="#60a5fa" />
+              {profile.role === 'coach' && (
+                <MacroRing label="Fiber" value={Math.round(totals.fiber)} target={targets?.fiber ?? 25} color="#22c55e" />
+              )}
             </div>
             {showProteinTooltip && (
               <div className="mt-4 pt-4 border-t border-white/10">
@@ -867,6 +873,7 @@ export default function LogClient({
                       { key: 'protein', label: 'Protein (g)' },
                       { key: 'carbs', label: 'Carbs (g)' },
                       { key: 'fat', label: 'Fat (g)' },
+                      ...(profile.role === 'coach' ? [{ key: 'fiber', label: 'Fiber (g)' }] : []),
                     ].map(({ key, label }) => (
                       <div key={key}>
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">{label}</label>
