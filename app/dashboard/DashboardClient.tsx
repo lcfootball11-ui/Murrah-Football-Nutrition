@@ -611,40 +611,35 @@ export default function DashboardClient({
                 const scoreColor = overallScore >= 90 ? 'text-green-400' : overallScore >= 70 ? 'text-yellow-400' : daysWithData === 0 ? 'text-slate-500' : 'text-red-400'
 
                 return (
-                  <div key={athlete.id} className="glass rounded-2xl px-4 py-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className={`text-base font-black w-6 text-center shrink-0 ${rankColor}`}>{idx + 1}</span>
-                      <div className="w-9 h-9 glass-blue rounded-xl flex items-center justify-center font-black text-blue-300 text-sm shrink-0">
+                  <div key={athlete.id} className="glass rounded-2xl px-4 py-2.5">
+                    <div className="flex items-center gap-3">
+                      <span className={`text-sm font-black w-5 text-center shrink-0 ${rankColor}`}>{idx + 1}</span>
+                      <div className="w-8 h-8 glass-blue rounded-xl flex items-center justify-center font-black text-blue-300 text-xs shrink-0">
                         {athlete.full_name.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-white truncate">{athlete.full_name}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${badgeColor}`}>{badgeLabel}</span>
-                          {streak > 0 && <span className="text-xs text-orange-400 font-bold">{streak} day streak 🔥</span>}
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-sm text-white truncate">{athlete.full_name}</p>
+                          <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${badgeColor}`}>{badgeLabel}</span>
+                        </div>
+                        {/* Spark line */}
+                        <div className="flex items-end gap-0.5 h-4 mt-1.5">
+                          {spark.map((val, si) => (
+                            <div key={si} className="flex-1 bg-white/10 rounded-sm overflow-hidden h-full flex items-end">
+                              <div
+                                className="w-full rounded-sm transition-all"
+                                style={{ height: `${Math.max(val, val > 0 ? 15 : 0)}%`, background: val >= 90 ? '#22c55e' : val > 0 ? '#3b82f6' : 'transparent' }}
+                              />
+                            </div>
+                          ))}
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className={`text-xl font-black ${scoreColor}`}>
+                        <p className={`text-lg font-black ${scoreColor}`}>
                           {lbSort === 'streak' ? `${sortScore}d` : `${Math.min(sortScore, 100)}%`}
                         </p>
-                        <p className="text-xs text-slate-500">{sortLabels[lbSort]}</p>
+                        {streak > 0 && <p className="text-xs text-orange-400 font-bold">{streak}d 🔥</p>}
                       </div>
-                    </div>
-                    {/* Spark line */}
-                    <div className="flex items-end gap-1 h-7">
-                      {spark.map((val, si) => (
-                        <div key={si} className="flex-1 bg-white/10 rounded-sm overflow-hidden h-full flex items-end">
-                          <div
-                            className="w-full rounded-sm transition-all"
-                            style={{ height: `${Math.max(val, val > 0 ? 8 : 0)}%`, background: val >= 90 ? '#22c55e' : val > 0 ? '#3b82f6' : 'transparent' }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex justify-between mt-1.5">
-                      <span className="text-xs text-slate-600">7 days ago</span>
-                      <span className="text-xs text-slate-600">Today</span>
                     </div>
                   </div>
                 )
