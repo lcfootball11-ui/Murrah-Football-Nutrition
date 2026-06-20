@@ -20,13 +20,6 @@ export async function POST(request: NextRequest) {
   }
 
   if (type === 'password') {
-    // Verify current password first by re-signing in
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: user.email!,
-      password: currentPassword,
-    })
-    if (signInError) return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 })
-
     const { error } = await supabase.auth.updateUser({ password: value })
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ success: true })

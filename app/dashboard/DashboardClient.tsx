@@ -123,7 +123,7 @@ export default function DashboardClient({
       body: JSON.stringify(
         settingsTab === 'email'
           ? { type: 'email', value: newEmail }
-          : { type: 'password', value: newPassword, currentPassword }
+          : { type: 'password', value: newPassword }
       ),
     })
     setSettingsSaving(false)
@@ -1093,16 +1093,6 @@ export default function DashboardClient({
               ) : (
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Current Password</label>
-                    <input
-                      type="password"
-                      placeholder="••••••••"
-                      value={currentPassword}
-                      onChange={e => setCurrentPassword(e.target.value)}
-                      className="w-full mt-1.5 glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-blue-500/50 placeholder-slate-600"
-                    />
-                  </div>
-                  <div>
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">New Password</label>
                     <input
                       type="password"
@@ -1133,7 +1123,7 @@ export default function DashboardClient({
 
               <button
                 onClick={saveCredentials}
-                disabled={settingsSaving || (settingsTab === 'email' ? !newEmail : !currentPassword || !newPassword || !confirmPassword)}
+                disabled={settingsSaving || (settingsTab === 'email' ? !newEmail : !newPassword || !confirmPassword)}
                 className="w-full py-3.5 rounded-2xl btn-blue disabled:opacity-50 text-white font-bold"
               >
                 {settingsSaving ? 'Saving…' : settingsTab === 'email' ? 'Send Confirmation Email ✓' : 'Update Password ✓'}
