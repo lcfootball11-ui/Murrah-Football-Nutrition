@@ -51,16 +51,12 @@ export function calcNutritionStreak(
   let streak = 0
   const cursor = new Date(today + 'T12:00:00')
 
-  // Check if today qualifies
+  // Check if today qualifies, then always move cursor to yesterday before looping
   const todayQualifies = meetsNutritionGoals(byDate[today] || [], target)
-  if (todayQualifies) {
-    streak = 1
-  } else {
-    // Start from yesterday if today didn't qualify
-    cursor.setDate(cursor.getDate() - 1)
-  }
+  if (todayQualifies) streak = 1
+  cursor.setDate(cursor.getDate() - 1)
 
-  // Count backwards from yesterday (or from today if today qualified)
+  // Count backwards from yesterday
   while (true) {
     const dateStr = cursor.toISOString().split('T')[0]
     const dayLogs = byDate[dateStr] || []
