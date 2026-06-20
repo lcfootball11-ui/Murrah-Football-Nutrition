@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings } from 'lucide-react'
+import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings, Info } from 'lucide-react'
 import WeightTracker from './WeightTracker'
 import NotificationBanner from '@/app/components/NotificationBanner'
 import NutritionStreakBadge from '@/app/components/NutritionStreakBadge'
@@ -56,8 +56,8 @@ type Targets = {
   supplements: string[]
 } | null
 
-function MacroRing({ label, value, target, color, unit = 'g' }: {
-  label: string; value: number; target: number; color: string; unit?: string
+function MacroRing({ label, value, target, color, unit = 'g', onInfo }: {
+  label: string; value: number; target: number; color: string; unit?: string; onInfo?: () => void
 }) {
   const pct = target > 0 ? Math.min(value / target, 1) : 0
   const r = 32
@@ -85,6 +85,11 @@ function MacroRing({ label, value, target, color, unit = 'g' }: {
       <div className="text-center">
         <p className="text-xs font-bold text-slate-300 uppercase tracking-wide">{label}</p>
         <p className="text-xs text-slate-600">{target}{unit}</p>
+        {onInfo && (
+          <button onClick={onInfo} className="mt-1 text-blue-400/50 hover:text-blue-400 transition-colors flex items-center justify-center w-full">
+            <Info size={12} />
+          </button>
+        )}
       </div>
     </div>
   )
@@ -131,6 +136,9 @@ export default function LogClient({
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [manual, setManual] = useState({ meal_name: '', calories: '', protein: '', carbs: '', fat: '' })
+  const [restaurantSearch, setRestaurantSearch] = useState('')
+  const [showCalTooltip, setShowCalTooltip] = useState(false)
+  const [showProteinTooltip, setShowProteinTooltip] = useState(false)
   const [, startTransition] = useTransition()
   const [photoIndex, setPhotoIndex] = useState(0)
   const photoList = [
@@ -402,7 +410,12 @@ export default function LogClient({
                   <Flame size={16} className="text-blue-400" />
                   <span className="text-xs font-bold text-blue-300 uppercase tracking-wide">{dateLabel}</span>
                 </div>
-                <span className="text-xs font-bold text-slate-400">{calPct}% of goal</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-400">{calPct}% of goal</span>
+                  <button onClick={() => setShowCalTooltip(v => !v)} className="text-blue-400/50 hover:text-blue-400 transition-colors">
+                    <Info size={13} />
+                  </button>
+                </div>
               </div>
               <div className="flex items-end gap-1 mb-2">
                 <span className="text-4xl font-black text-white">{totals.calories}</span>
@@ -418,6 +431,13 @@ export default function LogClient({
                   }}
                 />
               </div>
+              {showCalTooltip && (
+                <div className="mt-3 pt-3 border-t border-white/10">
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    <span className="text-blue-300 font-bold">Why calories matter:</span> Calories are the fuel your body runs on. Too few and you lose muscle mass and energy — too many and you gain unwanted fat. Hitting your daily calorie target helps you train harder, recover faster, and build the body composition your position demands.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -467,10 +487,17 @@ export default function LogClient({
           <div className="glass rounded-2xl p-5">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Macros</p>
             <div className="grid grid-cols-3 gap-4">
-              <MacroRing label="Protein" value={Math.round(totals.protein)} target={targets?.protein ?? 150} color="#3b82f6" />
+              <MacroRing label="Protein" value={Math.round(totals.protein)} target={targets?.protein ?? 150} color="#3b82f6" onInfo={() => setShowProteinTooltip(v => !v)} />
               <MacroRing label="Carbs" value={Math.round(totals.carbs)} target={targets?.carbs ?? 300} color="#94a3b8" />
               <MacroRing label="Fat" value={Math.round(totals.fat)} target={targets?.fat ?? 80} color="#60a5fa" />
             </div>
+            {showProteinTooltip && (
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  <span className="text-blue-300 font-bold">Why protein matters:</span> Protein builds and repairs the muscle tissue broken down during practice and lifting. Football players need roughly 0.7–1g per pound of bodyweight every day. Consistently hitting your protein goal is the single most important nutritional habit for getting bigger, stronger, and recovering between sessions.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -701,136 +728,43 @@ export default function LogClient({
               {mode === 'restaurant' ? (
                 <div className="space-y-3">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Select Restaurant</p>
-                  <button
-                    onClick={() => setMode('chipotle' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🌯</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">Chipotle Mexican Grill</p>
-                      <p className="text-xs text-slate-400">Build your bowl, burrito, or tacos step by step</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('subway' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🥖</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">Subway</p>
-                      <p className="text-xs text-slate-400">6" sub, footlong, wrap, or protein bowl</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('dominos' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🍕</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">Domino's Pizza</p>
-                      <p className="text-xs text-slate-400">Build your own or choose a specialty pizza</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('cookout' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🔥</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">Cook Out</p>
-                      <p className="text-xs text-slate-400">Burgers, chicken, hot dogs, sides & milkshakes</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('mcdonalds' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🍟</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">McDonald's</p>
-                      <p className="text-xs text-slate-400">Burgers, chicken, breakfast, sides & shakes</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('wendys' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🍔</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">Wendy's</p>
-                      <p className="text-xs text-slate-400">Dave's burgers, chicken, Frosty & chili</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('whataburger' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🧡</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">Whataburger</p>
-                      <p className="text-xs text-slate-400">Burgers, chicken strips, breakfast & shakes</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('rallys' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🏁</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">Rally's / Checkers</p>
-                      <p className="text-xs text-slate-400">Big Buford, loaded fries & milkshakes</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('chickfila' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🐔</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">Chick-fil-A</p>
-                      <p className="text-xs text-slate-400">Sandwiches, nuggets, grilled chicken & shakes</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('bostons' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🐟</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">Boston's Fish Supreme</p>
-                      <p className="text-xs text-slate-400">Fish, shrimp, wings & Cajun fries</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('longhorn' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🤠</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">LongHorn Steakhouse</p>
-                      <p className="text-xs text-slate-400">Steaks, chicken, seafood, soups & salads</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('mcalisters' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🥙</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">McAlister's Deli</p>
-                      <p className="text-xs text-slate-400">Sandwiches, spuds, soups & salads</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setMode('brents' as typeof mode)}
-                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
-                  >
-                    <span className="text-3xl">🧁</span>
-                    <div className="text-left">
-                      <p className="font-bold text-white">Brent's Drugs</p>
-                      <p className="text-xs text-slate-400">Classic diner — burgers, shakes & soda fountain</p>
-                    </div>
-                  </button>
+                  <input
+                    type="text"
+                    value={restaurantSearch}
+                    onChange={e => setRestaurantSearch(e.target.value)}
+                    placeholder="Search restaurants…"
+                    className="w-full glass text-white rounded-2xl px-4 py-3 outline-none border border-white/10 focus:border-blue-500/50 transition-all placeholder-slate-600 text-sm"
+                  />
+                  {[
+                    { mode: 'chipotle',    emoji: '🌯', name: 'Chipotle Mexican Grill',  desc: 'Build your bowl, burrito, or tacos step by step' },
+                    { mode: 'subway',      emoji: '🥖', name: 'Subway',                  desc: '6" sub, footlong, wrap, or protein bowl' },
+                    { mode: 'dominos',     emoji: '🍕', name: "Domino's Pizza",           desc: 'Build your own or choose a specialty pizza' },
+                    { mode: 'cookout',     emoji: '🔥', name: 'Cook Out',                 desc: 'Burgers, chicken, hot dogs, sides & milkshakes' },
+                    { mode: 'mcdonalds',   emoji: '🍟', name: "McDonald's",               desc: 'Burgers, chicken, breakfast, sides & shakes' },
+                    { mode: 'wendys',      emoji: '🍔', name: "Wendy's",                  desc: "Dave's burgers, chicken, Frosty & chili" },
+                    { mode: 'whataburger', emoji: '🧡', name: 'Whataburger',              desc: 'Burgers, chicken strips, breakfast & shakes' },
+                    { mode: 'rallys',      emoji: '🏁', name: "Rally's / Checkers",       desc: 'Big Buford, loaded fries & milkshakes' },
+                    { mode: 'chickfila',   emoji: '🐔', name: 'Chick-fil-A',              desc: 'Sandwiches, nuggets, grilled chicken & shakes' },
+                    { mode: 'bostons',     emoji: '🐟', name: "Boston's Fish Supreme",    desc: 'Fish, shrimp, wings & Cajun fries' },
+                    { mode: 'longhorn',    emoji: '🤠', name: 'LongHorn Steakhouse',      desc: 'Steaks, chicken, seafood, soups & salads' },
+                    { mode: 'mcalisters',  emoji: '🥙', name: "McAlister's Deli",         desc: 'Sandwiches, spuds, soups & salads' },
+                    { mode: 'brents',      emoji: '🧁', name: "Brent's Drugs",            desc: 'Classic diner — burgers, shakes & soda fountain' },
+                  ]
+                    .filter(r => r.name.toLowerCase().includes(restaurantSearch.toLowerCase()) || r.desc.toLowerCase().includes(restaurantSearch.toLowerCase()))
+                    .map(r => (
+                      <button
+                        key={r.mode}
+                        onClick={() => { setMode(r.mode as typeof mode); setRestaurantSearch('') }}
+                        className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
+                      >
+                        <span className="text-3xl">{r.emoji}</span>
+                        <div className="text-left">
+                          <p className="font-bold text-white">{r.name}</p>
+                          <p className="text-xs text-slate-400">{r.desc}</p>
+                        </div>
+                      </button>
+                    ))
+                  }
                 </div>
               ) : (mode as string) === 'chipotle' ? (
                 <ChipotleMealBuilder onAdd={addRestaurantMeal} onClose={resetModal} />
