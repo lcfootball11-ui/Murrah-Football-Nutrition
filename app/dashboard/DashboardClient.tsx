@@ -342,7 +342,7 @@ export default function DashboardClient({
                 <img
                   src="/PigandPint.jpg"
                   alt="Murrah"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#08091a] to-transparent" />
               </>
@@ -1113,7 +1113,7 @@ export default function DashboardClient({
           <img
             src="/PigandPint.jpg"
             alt="Murrah"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#08091a] to-transparent" />
         </div>
