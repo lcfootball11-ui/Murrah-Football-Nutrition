@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, X } from 'lucide-react'
+import { Bell, X, BookOpen } from 'lucide-react'
 
 type Notification = {
   id: string
@@ -68,6 +68,16 @@ export default function NotificationBanner() {
 
   return (
     <div className="fixed bottom-4 left-4 z-50">
+      {/* Handbook Button */}
+      <button
+        onClick={() => window.dispatchEvent(new CustomEvent('open-handbook'))}
+        className="relative mb-3 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+        style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.3) 0%, rgba(59,130,246,0.15) 100%)', border: '1px solid rgba(59,130,246,0.4)' }}
+        title="Nutrition Handbook"
+      >
+        <BookOpen size={20} className="text-blue-300" />
+      </button>
+
       {/* Bell Icon Button */}
       <button
         onClick={() => setShowPanel(!showPanel)}

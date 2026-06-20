@@ -156,6 +156,12 @@ export default function LogClient({
   const [savingPhone, setSavingPhone] = useState(false)
   const [showHandbook, setShowHandbook] = useState(false)
   const [handbookSection, setHandbookSection] = useState<string | null>(null)
+
+  useEffect(() => {
+    const handler = () => setShowHandbook(true)
+    window.addEventListener('open-handbook', handler)
+    return () => window.removeEventListener('open-handbook', handler)
+  }, [])
   useEffect(() => {
     const shuffled = [...photoList].sort(() => Math.random() - 0.5)
     setPhotos(shuffled)
@@ -402,9 +408,6 @@ export default function LogClient({
                 <LayoutDashboard size={18} />
               </a>
             )}
-            <button onClick={() => setShowHandbook(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors" title="Nutrition Handbook">
-              <BookOpen size={18} />
-            </button>
             <button onClick={() => setShowSettings(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
               <Settings size={18} />
             </button>
