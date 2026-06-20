@@ -242,16 +242,16 @@ export default function LogClient({
 
   async function addManual() {
     if (!manual.meal_name || !manual.calories) return
-    const entry = {
+    const entry: Record<string, unknown> = {
       log_date: activeDate,
       meal_name: manual.meal_name,
       calories: parseInt(manual.calories) || 0,
       protein: parseFloat(manual.protein) || 0,
       carbs: parseFloat(manual.carbs) || 0,
       fat: parseFloat(manual.fat) || 0,
-      fiber: parseFloat(manual.fiber) || 0,
       entry_method: 'manual',
     }
+    if (manual.fiber) entry.fiber = parseFloat(manual.fiber) || 0
     const res = await fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) })
     const { data } = await res.json()
     if (data) {
