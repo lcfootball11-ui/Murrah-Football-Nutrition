@@ -10,6 +10,7 @@ import NutritionStreakBadge from '@/app/components/NutritionStreakBadge'
 import ChipotleMealBuilder from '@/app/components/ChipotleMealBuilder'
 import SubwayMealBuilder from '@/app/components/SubwayMealBuilder'
 import DominosMealBuilder from '@/app/components/DominosMealBuilder'
+import CookOutMealBuilder from '@/app/components/CookOutMealBuilder'
 
 type FoodResult = {
   fdcId: number
@@ -109,7 +110,7 @@ export default function LogClient({
   const [suppLogs, setSuppLogs] = useState<SuppLog[]>(initialSuppLogs)
   const [dateLoading, setDateLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
-  const [mode, setMode] = useState<'search' | 'manual' | 'restaurant' | 'chipotle' | 'subway' | 'dominos'>('search')
+  const [mode, setMode] = useState<'search' | 'manual' | 'restaurant' | 'chipotle' | 'subway' | 'dominos' | 'cookout'>('search')
   const [historyLogs, setHistoryLogs] = useState<{ log_date: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
   const [historyWeights, setHistoryWeights] = useState<{ log_date: string; weight_lbs: number }[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
@@ -680,7 +681,7 @@ export default function LogClient({
                 </button>
                 <button
                   onClick={() => setMode('restaurant')}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${mode === 'restaurant' || mode === 'chipotle' || mode === 'subway' || mode === 'dominos' ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${mode === 'restaurant' || mode === 'chipotle' || mode === 'subway' || mode === 'dominos' || mode === 'cookout' ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
                 >
                   🍽️ Restaurants
                 </button>
@@ -729,6 +730,16 @@ export default function LogClient({
                       <p className="text-xs text-slate-400">Build your own or choose a specialty pizza</p>
                     </div>
                   </button>
+                  <button
+                    onClick={() => setMode('cookout' as typeof mode)}
+                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
+                  >
+                    <span className="text-3xl">🔥</span>
+                    <div className="text-left">
+                      <p className="font-bold text-white">Cook Out</p>
+                      <p className="text-xs text-slate-400">Burgers, chicken, hot dogs, sides & milkshakes</p>
+                    </div>
+                  </button>
                 </div>
               ) : (mode as string) === 'chipotle' ? (
                 <ChipotleMealBuilder onAdd={addRestaurantMeal} onClose={resetModal} />
@@ -736,6 +747,8 @@ export default function LogClient({
                 <SubwayMealBuilder onAdd={addRestaurantMeal} onClose={resetModal} />
               ) : (mode as string) === 'dominos' ? (
                 <DominosMealBuilder onAdd={addRestaurantMeal} />
+              ) : (mode as string) === 'cookout' ? (
+                <CookOutMealBuilder onAdd={addRestaurantMeal} />
               ) : mode === 'search' ? (
                 <div className="space-y-3">
                   <input
