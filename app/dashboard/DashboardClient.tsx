@@ -623,15 +623,24 @@ export default function DashboardClient({
                           <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${badgeColor}`}>{badgeLabel}</span>
                         </div>
                         {/* Spark line */}
-                        <div className="flex items-end gap-0.5 h-4 mt-1.5">
-                          {spark.map((val, si) => (
-                            <div key={si} className="flex-1 bg-white/10 rounded-sm overflow-hidden h-full flex items-end">
-                              <div
-                                className="w-full rounded-sm transition-all"
-                                style={{ height: `${Math.max(val, val > 0 ? 15 : 0)}%`, background: val >= 90 ? '#22c55e' : val > 0 ? '#3b82f6' : 'transparent' }}
-                              />
-                            </div>
-                          ))}
+                        <div className="flex items-end gap-0.5 mt-1.5">
+                          {spark.map((val, si) => {
+                            const dd = new Date(today + 'T12:00:00')
+                            dd.setDate(dd.getDate() - (6 - si))
+                            const dayLetter = dd.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1)
+                            const isToday = si === 6
+                            return (
+                              <div key={si} className="flex-1 flex flex-col items-center gap-0.5">
+                                <div className="w-full bg-white/10 rounded-sm overflow-hidden h-4 flex items-end">
+                                  <div
+                                    className="w-full rounded-sm transition-all"
+                                    style={{ height: `${Math.max(val, val > 0 ? 15 : 0)}%`, background: val >= 90 ? '#22c55e' : val > 0 ? '#3b82f6' : 'transparent' }}
+                                  />
+                                </div>
+                                <span className={`text-[9px] font-bold leading-none ${isToday ? 'text-blue-400' : 'text-slate-600'}`}>{dayLetter}</span>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
