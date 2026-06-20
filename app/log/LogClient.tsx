@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings, Info, LayoutDashboard } from 'lucide-react'
+import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings, Info, LayoutDashboard, BookOpen, ChevronRight } from 'lucide-react'
 import WeightTracker from './WeightTracker'
 import NotificationBanner from '@/app/components/NotificationBanner'
 import NutritionStreakBadge from '@/app/components/NutritionStreakBadge'
@@ -154,6 +154,8 @@ export default function LogClient({
   const [showSettings, setShowSettings] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState(profile.phone_number || '')
   const [savingPhone, setSavingPhone] = useState(false)
+  const [showHandbook, setShowHandbook] = useState(false)
+  const [handbookSection, setHandbookSection] = useState<string | null>(null)
   useEffect(() => {
     const shuffled = [...photoList].sort(() => Math.random() - 0.5)
     setPhotos(shuffled)
@@ -400,6 +402,9 @@ export default function LogClient({
                 <LayoutDashboard size={18} />
               </a>
             )}
+            <button onClick={() => setShowHandbook(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors" title="Nutrition Handbook">
+              <BookOpen size={18} />
+            </button>
             <button onClick={() => setShowSettings(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
               <Settings size={18} />
             </button>
@@ -903,6 +908,245 @@ export default function LogClient({
               )}
             </div>{/* end scrollable content */}
           </div>{/* end modal sheet */}
+        </div>
+      )}
+
+      {/* Nutrition Handbook Modal */}
+      {showHandbook && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end" onClick={e => e.target === e.currentTarget && setShowHandbook(false)}>
+          <div className="w-full rounded-t-3xl flex flex-col animate-slide-up" style={{ background: '#0d1433', border: '1px solid rgba(59,130,246,0.2)', borderBottom: 'none', maxHeight: '92dvh' }}>
+            <div className="px-5 pt-5 pb-3 shrink-0">
+              <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  {handbookSection && (
+                    <button onClick={() => setHandbookSection(null)} className="text-blue-400 hover:text-blue-300 transition-colors">
+                      <ChevronDown size={18} className="rotate-90" />
+                    </button>
+                  )}
+                  <h3 className="font-black text-xl text-white flex items-center gap-2">
+                    <BookOpen size={20} className="text-blue-400" />
+                    {handbookSection ?? 'Nutrition Handbook'}
+                  </h3>
+                </div>
+                <button onClick={() => { setShowHandbook(false); setHandbookSection(null) }} className="glass rounded-xl p-2 text-slate-400 hover:text-white">
+                  <X size={18} />
+                </button>
+              </div>
+              {!handbookSection && <p className="text-xs text-slate-500 mt-1">Tap a topic to learn more</p>}
+            </div>
+
+            <div className="overflow-y-auto px-5 pb-8 flex-1">
+              {!handbookSection ? (
+                <div className="space-y-3 mt-2">
+                  {[
+                    { id: 'macros', emoji: '⚡', title: 'Macros & Calories', sub: 'Fuel, build, and recover' },
+                    { id: 'weight', emoji: '🎯', title: 'Weight Goals', sub: 'Gain, loss, and maintenance' },
+                    { id: 'hydration', emoji: '💧', title: 'Hydration', sub: 'The most overlooked edge' },
+                    { id: 'sleep', emoji: '😴', title: 'Sleep & Recovery', sub: 'When growth actually happens' },
+                    { id: 'fiber', emoji: '🥦', title: 'Fiber & Gut Health', sub: 'Absorb what you eat' },
+                    { id: 'supplements', emoji: '💊', title: 'Supplements', sub: 'What you\'re taking and why' },
+                  ].map(s => (
+                    <button
+                      key={s.id}
+                      onClick={() => setHandbookSection(s.id)}
+                      className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
+                    >
+                      <span className="text-3xl w-10 text-center">{s.emoji}</span>
+                      <div className="text-left flex-1">
+                        <p className="font-bold text-white">{s.title}</p>
+                        <p className="text-xs text-slate-400">{s.sub}</p>
+                      </div>
+                      <ChevronRight size={16} className="text-slate-600" />
+                    </button>
+                  ))}
+                </div>
+              ) : handbookSection === 'macros' ? (
+                <div className="space-y-4 mt-2">
+                  <div className="glass-blue rounded-2xl p-4">
+                    <p className="text-sm text-slate-300 leading-relaxed">Football is a power and collision sport. Your body needs the right fuel mix to hit hard, run routes, and still recover for tomorrow's practice. That fuel comes down to three macronutrients — and calories are how we measure all of it.</p>
+                  </div>
+                  {[
+                    {
+                      color: '#3b82f6', label: 'Calories', emoji: '🔥',
+                      headline: 'Your total energy budget',
+                      body: 'Every movement you make burns calories — sprinting, lifting, even thinking. Eat too few and your body starts burning muscle for fuel. Eat enough and you train harder, recover faster, and stay on the field.',
+                      tip: 'Hitting your calorie target is the single most impactful thing you can do nutritionally.',
+                    },
+                    {
+                      color: '#60a5fa', label: 'Protein', emoji: '💪',
+                      headline: 'The building block of muscle',
+                      body: 'Every time you lift or practice, you create tiny tears in muscle fibers. Protein repairs those tears and builds them back bigger and stronger. Aim for 0.7–1g per pound of bodyweight every day — spread across meals, not just post-workout.',
+                      tip: 'If you only hit one macro, make it protein. Everything else is secondary.',
+                    },
+                    {
+                      color: '#94a3b8', label: 'Carbs', emoji: '⚡',
+                      headline: 'Your primary performance fuel',
+                      body: 'Carbs are stored as glycogen in your muscles and liver — that\'s what powers your sprints, cuts, and explosive plays. Low carbs = slow feet and cloudy thinking. High carbs = sustained energy through two-a-days.',
+                      tip: 'Eat carbs before practice and games. Save the lower-carb meals for rest days.',
+                    },
+                    {
+                      color: '#facc15', label: 'Fat', emoji: '🛡️',
+                      headline: 'Hormones, joints, and long-burn energy',
+                      body: 'Fat is essential for producing testosterone and other hormones that drive muscle growth. It also cushions joints — important for a contact sport. Don\'t fear fat; just choose quality sources like eggs, avocado, and nuts.',
+                      tip: 'Fat is slow-digesting. Avoid heavy fat meals right before practice.',
+                    },
+                  ].map(m => (
+                    <div key={m.label} className="glass rounded-2xl p-4 border border-white/5" style={{ borderLeft: `3px solid ${m.color}` }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xl">{m.emoji}</span>
+                        <p className="font-black text-white">{m.label}</p>
+                        <span className="text-xs text-slate-500 ml-1">— {m.headline}</span>
+                      </div>
+                      <p className="text-sm text-slate-300 leading-relaxed mb-3">{m.body}</p>
+                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl px-3 py-2">
+                        <p className="text-xs text-blue-300"><span className="font-bold">Key takeaway:</span> {m.tip}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : handbookSection === 'weight' ? (
+                <div className="space-y-4 mt-2">
+                  <div className="glass-blue rounded-2xl p-4">
+                    <p className="text-sm text-slate-300 leading-relaxed">Your coach has set a weight goal for you. Here\'s exactly what that means and how nutrition makes it happen.</p>
+                  </div>
+                  {[
+                    {
+                      emoji: '📈', title: 'Gaining Weight (Building Mass)',
+                      color: '#22c55e',
+                      body: 'To gain lean mass, you need a calorie surplus — eating slightly more than you burn. The goal is to add muscle, not just fat, so protein intake is critical. Aim to gain 0.5–1 lb per week. Faster than that and most of the gain is fat.',
+                      bullets: ['Hit your full calorie target every day — don\'t leave calories on the table', 'Protein at every meal — eggs, chicken, beef, Greek yogurt', 'Carbs around practice — oatmeal before, rice or pasta after', 'Don\'t skip breakfast — it\'s hardest to hit calories if you start behind'],
+                    },
+                    {
+                      emoji: '📉', title: 'Losing Weight (Cutting Fat)',
+                      color: '#f87171',
+                      body: 'Losing weight while keeping your strength means eating in a modest deficit — but never starving. Crash dieting destroys muscle and tanks your performance. The floor for active athletes is around 700 calories minimum per day; below that you\'re breaking down muscle.',
+                      bullets: ['Keep protein high — it protects muscle when you\'re in a deficit', 'Cut calories from fat and refined carbs first, not protein', 'Eat filling, high-fiber foods to stay satisfied on fewer calories', 'Never skip a pre-practice meal — you\'ll run out of gas mid-session'],
+                    },
+                    {
+                      emoji: '⚖️', title: 'Maintaining Weight',
+                      color: '#60a5fa',
+                      body: 'Maintenance means eating at roughly what you burn. For most athletes, this still means eating a lot — your body burns significant calories through practice, lifting, and daily movement. The goal is body recomposition: slowly trading fat for muscle.',
+                      bullets: ['Focus on quality over quantity — whole foods over processed', 'Stay consistent — big swings up and down disrupt your metabolism', 'Prioritize protein to slowly improve body composition over time', 'Track your intake; it\'s easy to accidentally under or overeat at maintenance'],
+                    },
+                  ].map(g => (
+                    <div key={g.title} className="glass rounded-2xl p-4 border border-white/5" style={{ borderLeft: `3px solid ${g.color}` }}>
+                      <p className="font-black text-white text-base mb-1">{g.emoji} {g.title}</p>
+                      <p className="text-sm text-slate-300 leading-relaxed mb-3">{g.body}</p>
+                      <ul className="space-y-1.5">
+                        {g.bullets.map((b, i) => (
+                          <li key={i} className="text-xs text-slate-400 flex items-start gap-2">
+                            <span style={{ color: g.color }} className="mt-0.5 shrink-0">▸</span>{b}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ) : handbookSection === 'hydration' ? (
+                <div className="space-y-4 mt-2">
+                  <div className="glass-blue rounded-2xl p-4">
+                    <p className="text-sm text-slate-300 leading-relaxed">A 2% drop in body water causes a measurable drop in strength, speed, and decision-making. For a 200 lb lineman, that\'s just 4 lbs of sweat — less than one practice in Mississippi heat.</p>
+                  </div>
+                  {[
+                    { emoji: '📏', title: 'How Much to Drink', body: 'Base target is half your bodyweight in ounces per day. Add 16–24 oz for every hour of practice or lifting. In summer heat, you can lose 2–3 liters per session through sweat alone.', example: '200 lb athlete → 100 oz baseline + 24 oz per practice hour' },
+                    { emoji: '⏱️', title: 'When to Drink', body: 'Don\'t wait until you\'re thirsty — thirst means you\'re already behind. Sip consistently all day. Chug 16 oz first thing in the morning (you lose water overnight). Have 16 oz 30 min before practice, sip during, and 20 oz after.', example: 'Morning → Before practice → During → After → Dinner → Before bed' },
+                    { emoji: '🧂', title: 'Electrolytes Matter', body: 'Water alone isn\'t enough if you\'re sweating heavily. You lose sodium, potassium, and magnesium in sweat — cramping is usually an electrolyte deficit, not just dehydration. Sports drinks or electrolyte tablets help on long practice days.', example: 'Signs you need electrolytes: muscle cramps, headache, fatigue that\'s not fixed by rest' },
+                    { emoji: '🔍', title: 'Check Your Urine', body: 'The fastest hydration test: look at the color. Pale yellow = well hydrated. Dark yellow or amber = drink more, now. Clear = possibly over-hydrated (rare but real). Do this check every morning and after practice.', example: 'Target: pale lemonade color. Avoid: apple juice color going into a game.' },
+                  ].map(h => (
+                    <div key={h.title} className="glass rounded-2xl p-4 border border-white/5 border-l-2 border-l-blue-400">
+                      <p className="font-black text-white mb-1">{h.emoji} {h.title}</p>
+                      <p className="text-sm text-slate-300 leading-relaxed mb-2">{h.body}</p>
+                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl px-3 py-2">
+                        <p className="text-xs text-blue-300">{h.example}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : handbookSection === 'sleep' ? (
+                <div className="space-y-4 mt-2">
+                  <div className="glass-blue rounded-2xl p-4">
+                    <p className="text-sm text-slate-300 leading-relaxed">You don\'t grow in the weight room. You grow while you sleep. Every rep you do creates the signal — sleep is when your body actually builds the muscle. Skipping sleep erases gains no matter how hard you train.</p>
+                  </div>
+                  {[
+                    { emoji: '🕐', title: 'How Much Sleep You Need', body: 'High school and college athletes need 8–10 hours. Not 6. Not 7. Eight to ten. Studies on NBA and NFL players show performance drops measurably below 8 hours — slower sprint times, worse reaction speed, higher injury risk.', highlight: 'Target: 8–10 hours. Non-negotiable during the season.' },
+                    { emoji: '🧬', title: 'What Happens While You Sleep', body: 'The first few hours of deep sleep trigger a surge of human growth hormone (HGH) — the most powerful muscle-building signal your body produces. Protein synthesis (turning the protein you ate into actual muscle) peaks during sleep. Cortisol (a stress hormone that breaks down muscle) drops to its lowest point.', highlight: 'Sleep is literally when your gains happen. No sleep = no gains from the food you ate.' },
+                    { emoji: '🥛', title: 'Nutrition Before Bed', body: 'Eat a slow-digesting protein 30–60 minutes before bed. Cottage cheese, Greek yogurt, or a casein protein shake are ideal — they release amino acids slowly through the night to keep protein synthesis running while you sleep.', highlight: 'Casein protein or cottage cheese before bed = 8 hours of muscle-building fuel.' },
+                    { emoji: '📵', title: 'Sleep Hygiene for Athletes', body: 'Phone screens suppress melatonin — the hormone that triggers sleep. Put your phone face-down 30 minutes before bed. Keep your room cold (65–68°F is ideal for sleep quality). Consistent bedtimes matter more than total hours — your body clock is a real thing.', highlight: 'Same bedtime every night > sleeping in on weekends. Consistency wins.' },
+                  ].map(s => (
+                    <div key={s.title} className="glass rounded-2xl p-4 border border-white/5 border-l-2 border-l-purple-400">
+                      <p className="font-black text-white mb-1">{s.emoji} {s.title}</p>
+                      <p className="text-sm text-slate-300 leading-relaxed mb-2">{s.body}</p>
+                      <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl px-3 py-2">
+                        <p className="text-xs text-purple-300">{s.highlight}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : handbookSection === 'fiber' ? (
+                <div className="space-y-4 mt-2">
+                  <div className="glass-blue rounded-2xl p-4">
+                    <p className="text-sm text-slate-300 leading-relaxed">You can eat perfectly on paper and still not see results if your gut isn\'t absorbing nutrients properly. Fiber is what keeps your digestive system running so the protein and carbs you eat actually make it to your muscles.</p>
+                  </div>
+                  {[
+                    { emoji: '🔬', title: 'What Fiber Actually Does', body: 'Fiber feeds the good bacteria in your gut (your microbiome). A healthy microbiome improves how efficiently you absorb protein, carbs, and vitamins. It also reduces inflammation — critical for athletes who are constantly breaking down and rebuilding tissue.', highlight: 'Better gut = better absorption = more results from every meal you eat.' },
+                    { emoji: '📊', title: 'How Much You Need', body: 'Athletes should aim for 25–35g of fiber per day. Most people eating a typical diet get 10–15g. The gap is mostly from cutting out vegetables and whole grains in favor of easier fast food options.', highlight: 'Target: 25–35g/day. Check your fiber ring in this app to track it.' },
+                    { emoji: '⚡', title: 'Fiber and Energy Levels', body: 'Soluble fiber slows the absorption of carbohydrates, which stabilizes your blood sugar. That means no energy crash mid-practice from spiking and dropping glucose. Steady fuel = steady performance.', highlight: 'High fiber carbs (oats, brown rice, beans) = sustained energy vs. white bread crashes.' },
+                    { emoji: '🥗', title: 'Best Sources for Athletes', body: 'You don\'t need to overthink this. Add one or two of these to every meal: oats, brown rice, black beans, lentils, broccoli, spinach, apples, bananas, whole wheat bread. These also come loaded with vitamins and minerals that support performance.', highlight: 'Easiest win: add spinach to every protein shake and black beans to every rice meal.' },
+                  ].map(f => (
+                    <div key={f.title} className="glass rounded-2xl p-4 border border-white/5 border-l-2 border-l-green-400">
+                      <p className="font-black text-white mb-1">{f.emoji} {f.title}</p>
+                      <p className="text-sm text-slate-300 leading-relaxed mb-2">{f.body}</p>
+                      <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
+                        <p className="text-xs text-green-300">{f.highlight}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : handbookSection === 'supplements' ? (
+                <div className="space-y-4 mt-2">
+                  <div className="glass-blue rounded-2xl p-4">
+                    <p className="text-sm text-slate-300 leading-relaxed">Supplements are exactly that — supplemental. They fill gaps in your nutrition and enhance what food already does. None of them work if your food and sleep are a mess. Get the basics right first, then supplements amplify the results.</p>
+                  </div>
+                  {[
+                    {
+                      emoji: '💪', title: 'Creatine Monohydrate', color: '#3b82f6',
+                      body: 'The most researched supplement in sports science — thousands of studies, consistently proven to work. Creatine increases your muscles\' capacity to produce explosive energy (ATP). More ATP = more reps, heavier lifts, more powerful plays.',
+                      howto: 'Take 3–5g daily, any time. You don\'t need to "load." It takes 2–4 weeks to saturate your muscles, then you notice the difference.',
+                    },
+                    {
+                      emoji: '🥛', title: 'Protein Powder (Whey or Casein)', color: '#60a5fa',
+                      body: 'Not magic — just a convenient way to hit your protein target when whole food isn\'t available. Whey is fast-absorbing and best post-workout. Casein is slow-absorbing and best before bed (keeps protein synthesis running overnight).',
+                      howto: 'Use whey within 30–60 min after lifting. Use casein before bed. Don\'t rely on shakes over real food.',
+                    },
+                    {
+                      emoji: '☀️', title: 'Vitamin D3', color: '#facc15',
+                      body: 'Most athletes are deficient in Vitamin D, especially if you\'re inside a lot. Vitamin D regulates testosterone production, immune function, and bone density. Low Vitamin D = lower testosterone, slower recovery, higher injury risk.',
+                      howto: 'Take 2,000–5,000 IU daily with a meal that has fat. Ask your doctor for a blood test to know your actual level.',
+                    },
+                    {
+                      emoji: '🐟', title: 'Fish Oil (Omega-3s)', color: '#22c55e',
+                      body: 'Fish oil reduces inflammation in joints and muscles — crucial for a collision sport where your body takes constant hits. It also supports brain function and heart health. Think of it as joint insurance for a sport that\'s hard on your body.',
+                      howto: 'Take 2–3g of EPA+DHA daily (read the label, not just total fish oil). Take with food to avoid fishy aftertaste.',
+                    },
+                    {
+                      emoji: '🍋', title: 'Electrolyte Supplements', color: '#f97316',
+                      body: 'Sodium, potassium, and magnesium lost through sweat. Especially important in summer camps and two-a-days when you can sweat 2+ liters per session. Prevents cramping and supports nerve function (which affects coordination and reaction time).',
+                      howto: 'Use on heavy practice days. Mix into your water bottle. Don\'t use sugary sports drinks as your primary hydration source.',
+                    },
+                  ].map(s => (
+                    <div key={s.title} className="glass rounded-2xl p-4 border border-white/5" style={{ borderLeft: `3px solid ${s.color}` }}>
+                      <p className="font-black text-white mb-1">{s.emoji} {s.title}</p>
+                      <p className="text-sm text-slate-300 leading-relaxed mb-3">{s.body}</p>
+                      <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2">
+                        <p className="text-xs text-slate-300"><span className="font-bold text-white">How to use:</span> {s.howto}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
         </div>
       )}
 
