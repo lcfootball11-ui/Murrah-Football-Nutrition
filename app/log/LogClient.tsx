@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings, Info } from 'lucide-react'
+import { LogOut, Plus, Search, X, ChevronDown, Pill, Calendar, Flame, Settings, Info, LayoutDashboard } from 'lucide-react'
 import WeightTracker from './WeightTracker'
 import NotificationBanner from '@/app/components/NotificationBanner'
 import NutritionStreakBadge from '@/app/components/NutritionStreakBadge'
@@ -392,6 +392,11 @@ export default function LogClient({
             )}
           </div>
           <div className="flex items-center gap-2">
+            {profile.role === 'coach' && (
+              <a href="/dashboard" className="glass rounded-xl p-2.5 text-blue-400 hover:text-blue-300 transition-colors" title="Back to Dashboard">
+                <LayoutDashboard size={18} />
+              </a>
+            )}
             <button onClick={() => setShowSettings(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors">
               <Settings size={18} />
             </button>

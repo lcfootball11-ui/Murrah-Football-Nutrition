@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History, Settings } from 'lucide-react'
+import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History, Settings, LayoutDashboard } from 'lucide-react'
 import NotificationBanner from '@/app/components/NotificationBanner'
 // import WeightTrendChart from './WeightTrendChart' // TODO: Re-enable when weight data is more robust
 
@@ -1283,7 +1283,22 @@ export default function DashboardClient({
               <h3 className="font-black text-xl flex items-center gap-2"><Users size={20} className="text-blue-400" /> Coaching Staff</h3>
               <button onClick={() => setShowCoaches(false)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
             </div>
-            <div className="space-y-2 max-h-72 overflow-y-auto">
+            {/* My Log shortcut */}
+            <a
+              href="/log"
+              className="flex items-center gap-3 glass-blue rounded-2xl px-4 py-3 border border-blue-500/30 hover:border-blue-400/60 transition-all"
+            >
+              <div className="w-9 h-9 btn-blue rounded-xl flex items-center justify-center shrink-0">
+                <LayoutDashboard size={16} className="text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-white text-sm">My Nutrition Log</p>
+                <p className="text-xs text-blue-300">Track your own meals & macros</p>
+              </div>
+              <span className="text-blue-400 text-lg">→</span>
+            </a>
+
+            <div className="space-y-2 max-h-56 overflow-y-auto">
               {coaches.length === 0 && (
                 <p className="text-slate-500 text-sm text-center py-6">No coaches found</p>
               )}

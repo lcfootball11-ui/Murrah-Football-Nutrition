@@ -20,7 +20,7 @@ export default async function LogPage() {
 
   const { data: profile } = await admin.from('profiles').select('*').eq('id', user.id).single()
   if (!profile) redirect('/login')
-  if (profile.role === 'coach') redirect('/dashboard')
+  // Coaches are allowed through to track their own nutrition
 
   const today = getCentralTime()
 
