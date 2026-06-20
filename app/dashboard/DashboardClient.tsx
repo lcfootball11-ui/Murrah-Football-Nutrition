@@ -310,7 +310,7 @@ export default function DashboardClient({
     const plan = target?.plan ?? 'gain'
     const totalCal = athleteLogs.reduce((sum, l) => sum + l.calories, 0)
 
-    const goalMet = plan === 'loss' ? totalCal <= calTarget : totalCal >= calTarget * 0.9
+    const goalMet = plan === 'loss' ? totalCal >= 700 && totalCal <= calTarget * 1.05 : totalCal >= calTarget * 0.9
     console.log(`${athlete.full_name}: ${totalCal}cal / ${calTarget}cal (${plan}) = ${goalMet ? 'MET' : 'NOT MET'}`)
     return goalMet
   }).length
@@ -489,9 +489,15 @@ export default function DashboardClient({
             totalPro = daysWithData > 0 ? Math.round(days.reduce((s, d) => s + d.pro, 0) / daysWithData) : 0
           }
 
-          const calPctVal = calTarget > 0 ? Math.min(Math.round((totalCal / calTarget) * 100), 150) : 0
+          const calPctVal = calTarget > 0
+            ? plan === 'loss'
+              ? totalCal >= 700 && totalCal <= calTarget * 1.05 ? 100
+                : totalCal < 700 ? Math.round((totalCal / 700) * 100)
+                : Math.max(0, Math.round((1 - (totalCal - calTarget) / calTarget) * 100))
+              : Math.min(Math.round((totalCal / calTarget) * 100), 150)
+            : 0
           const proPctVal = proTarget > 0 ? Math.min(Math.round((totalPro / proTarget) * 100), 150) : 0
-          const calMet = plan === 'loss' ? totalCal <= calTarget * 1.05 : totalCal >= calTarget * 0.9
+          const calMet = plan === 'loss' ? totalCal >= 700 && totalCal <= calTarget * 1.05 : totalCal >= calTarget * 0.9
           const proMet = totalPro >= proTarget * 0.9
           const overallScore = Math.round((Math.min(calPctVal, 100) + Math.min(proPctVal, 100)) / 2)
           const streak = streaks[athlete.id] ?? 0
@@ -696,7 +702,7 @@ export default function DashboardClient({
 
           const proteinMet = totals.pro >= proTarget * 0.9
           const calorieMet = plan === 'loss'
-            ? totals.cal <= calTarget * 1.05
+            ? totals.cal >= 700 && totals.cal <= calTarget * 1.05
             : totals.cal >= calTarget * 0.9
 
           const compliant = proteinMet && calorieMet

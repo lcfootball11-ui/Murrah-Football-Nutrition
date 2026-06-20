@@ -26,9 +26,11 @@ function meetsNutritionGoals(dayLogs: NutritionLog[], target: Target): boolean {
   const proteinMet = totalProtein >= proTarget * 0.9
 
   // Calories depend on plan
+  // Loss: must eat at least 700 cal (minimum nutrition floor) but stay at/under target
+  // Gain: must hit 90% of target
   const caloriesMet = plan === 'loss'
-    ? totalCals <= calTarget * 1.05 // Allow 5% over for loss
-    : totalCals >= calTarget * 0.9   // Need 90% for gain
+    ? totalCals >= 700 && totalCals <= calTarget * 1.05
+    : totalCals >= calTarget * 0.9
 
   return proteinMet && caloriesMet
 }
