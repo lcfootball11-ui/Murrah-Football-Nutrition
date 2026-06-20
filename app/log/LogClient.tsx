@@ -11,7 +11,7 @@ import ChipotleMealBuilder from '@/app/components/ChipotleMealBuilder'
 import SubwayMealBuilder from '@/app/components/SubwayMealBuilder'
 import DominosMealBuilder from '@/app/components/DominosMealBuilder'
 import CookOutMealBuilder from '@/app/components/CookOutMealBuilder'
-import FastFoodMealBuilder, { MCDONALDS_MENU, WENDYS_MENU, WHATABURGER_MENU, RALLYS_MENU, CHICKFILA_MENU, BOSTONS_MENU, LONGHORN_MENU, MCALISTERS_MENU } from '@/app/components/FastFoodMealBuilder'
+import FastFoodMealBuilder, { MCDONALDS_MENU, WENDYS_MENU, WHATABURGER_MENU, RALLYS_MENU, CHICKFILA_MENU, BOSTONS_MENU, LONGHORN_MENU, MCALISTERS_MENU, BRENTS_MENU } from '@/app/components/FastFoodMealBuilder'
 
 type FoodResult = {
   fdcId: number
@@ -821,6 +821,16 @@ export default function LogClient({
                       <p className="text-xs text-slate-400">Sandwiches, spuds, soups & salads</p>
                     </div>
                   </button>
+                  <button
+                    onClick={() => setMode('brents' as typeof mode)}
+                    className="w-full glass border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-4 hover:border-blue-500/40 transition-all"
+                  >
+                    <span className="text-3xl">🧁</span>
+                    <div className="text-left">
+                      <p className="font-bold text-white">Brent's Drugs</p>
+                      <p className="text-xs text-slate-400">Classic diner — burgers, shakes & soda fountain</p>
+                    </div>
+                  </button>
                 </div>
               ) : (mode as string) === 'chipotle' ? (
                 <ChipotleMealBuilder onAdd={addRestaurantMeal} onClose={resetModal} />
@@ -846,6 +856,8 @@ export default function LogClient({
                 <FastFoodMealBuilder restaurantName="LongHorn Steakhouse" menu={LONGHORN_MENU} onAdd={addRestaurantMeal} />
               ) : (mode as string) === 'mcalisters' ? (
                 <FastFoodMealBuilder restaurantName="McAlister's Deli" menu={MCALISTERS_MENU} onAdd={addRestaurantMeal} />
+              ) : (mode as string) === 'brents' ? (
+                <FastFoodMealBuilder restaurantName="Brent's Drugs" menu={BRENTS_MENU} onAdd={addRestaurantMeal} />
               ) : mode === 'search' ? (
                 <div className="space-y-3">
                   <input
