@@ -66,6 +66,9 @@ export default function DashboardClient({
   const [generatingPassword, setGeneratingPassword] = useState<string | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [settingsTab, setSettingsTab] = useState<'email' | 'password'>('email')
+  const [lbPeriod, setLbPeriod] = useState<'today' | 'week'>('today')
+  const [lbSort, setLbSort] = useState<'overall' | 'calories' | 'protein' | 'streak'>('overall')
+  const [lbAtRisk, setLbAtRisk] = useState(false)
   const [newEmail, setNewEmail] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -450,6 +453,165 @@ export default function DashboardClient({
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Leaderboard */}
+      {(() => {
+        const athleteScores = athletes.map(athlete => {
+          const target = targets.find(t => t.user_id === athlete.id)
+          const calTarget = target?.calories ?? 2500
+          const proTarget = target?.protein ?? 150
+          const plan = target?.plan ?? 'gain'
+
+          let totalCal = 0, totalPro = 0, daysWithData = 0
+
+          if (lbPeriod === 'today') {
+            const todayLogs = logs.filter(l => l.user_id === athlete.id)
+            totalCal = todayLogs.reduce((s, l) => s + l.calories, 0)
+            totalPro = todayLogs.reduce((s, l) => s + l.protein, 0)
+            daysWithData = todayLogs.length > 0 ? 1 : 0
+          } else {
+            const wLogs = weeklyLogs.filter(l => l.user_id === athlete.id && l.calories > 0)
+            const byDate: Record<string, { cal: number; pro: number }> = {}
+            wLogs.forEach(l => {
+              if (!byDate[l.log_date]) byDate[l.log_date] = { cal: 0, pro: 0 }
+              byDate[l.log_date].cal += l.calories
+              byDate[l.log_date].pro += l.protein
+            })
+            const days = Object.values(byDate)
+            daysWithData = days.length
+            totalCal = daysWithData > 0 ? Math.round(days.reduce((s, d) => s + d.cal, 0) / daysWithData) : 0
+            totalPro = daysWithData > 0 ? Math.round(days.reduce((s, d) => s + d.pro, 0) / daysWithData) : 0
+          }
+
+          const calPctVal = calTarget > 0 ? Math.min(Math.round((totalCal / calTarget) * 100), 150) : 0
+          const proPctVal = proTarget > 0 ? Math.min(Math.round((totalPro / proTarget) * 100), 150) : 0
+          const calMet = plan === 'loss' ? totalCal <= calTarget * 1.05 : totalCal >= calTarget * 0.9
+          const proMet = totalPro >= proTarget * 0.9
+          const overallScore = Math.round((Math.min(calPctVal, 100) + Math.min(proPctVal, 100)) / 2)
+          const streak = streaks[athlete.id] ?? 0
+
+          // 7-day spark line data
+          const spark: number[] = []
+          const d = new Date(today + 'T12:00:00')
+          for (let i = 6; i >= 0; i--) {
+            const dd = new Date(d)
+            dd.setDate(dd.getDate() - i)
+            const ds = dd.toISOString().split('T')[0]
+            const dayLogs = weeklyLogs.filter(l => l.user_id === athlete.id && l.log_date === ds)
+            const dayCal = dayLogs.reduce((s, l) => s + l.calories, 0)
+            spark.push(Math.min(Math.round((dayCal / calTarget) * 100), 100))
+          }
+
+          return { athlete, totalCal, totalPro, calPctVal, proPctVal, overallScore, calMet, proMet, daysWithData, streak, spark, plan, calTarget, proTarget }
+        })
+
+        const sorted = [...athleteScores].sort((a, b) => {
+          if (lbSort === 'calories') return b.calPctVal - a.calPctVal
+          if (lbSort === 'protein') return b.proPctVal - a.proPctVal
+          if (lbSort === 'streak') return b.streak - a.streak
+          return b.overallScore - a.overallScore
+        })
+
+        const displayed = lbAtRisk
+          ? sorted.filter(a => a.overallScore < 70 || a.daysWithData === 0)
+          : sorted
+
+        return (
+          <div className="px-4 py-4 max-w-2xl mx-auto pb-4">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-black text-slate-200 uppercase tracking-wide">🏆 Top Performers</p>
+              <button
+                onClick={() => setLbAtRisk(v => !v)}
+                className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all ${lbAtRisk ? 'bg-red-500/30 text-red-300 border border-red-500/40' : 'glass text-slate-500 hover:text-slate-300'}`}
+              >
+                ⚠️ At Risk
+              </button>
+            </div>
+
+            {/* Period + Sort toggles */}
+            <div className="flex gap-2 mb-3">
+              <div className="flex glass rounded-2xl p-1 gap-1 flex-1">
+                {(['today', 'week'] as const).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setLbPeriod(p)}
+                    className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all capitalize ${lbPeriod === p ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                    {p === 'today' ? 'Today' : 'This Week'}
+                  </button>
+                ))}
+              </div>
+              <div className="flex glass rounded-2xl p-1 gap-1 flex-1">
+                {([['overall', '⭐'], ['calories', '🔥'], ['protein', '💪'], ['streak', '📅']] as const).map(([key, icon]) => (
+                  <button
+                    key={key}
+                    onClick={() => setLbSort(key as typeof lbSort)}
+                    className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all ${lbSort === key ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                    title={key.charAt(0).toUpperCase() + key.slice(1)}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Ranked rows */}
+            {displayed.length === 0 && (
+              <div className="glass rounded-2xl py-8 text-center">
+                <p className="text-slate-500 text-sm">No athletes at risk 🎉</p>
+              </div>
+            )}
+            <div className="space-y-2">
+              {displayed.map((entry, idx) => {
+                const { athlete, overallScore, calPctVal, proPctVal, streak, spark, daysWithData } = entry
+                const badgeColor = overallScore >= 90 ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                  : overallScore >= 70 ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                  : daysWithData === 0 ? 'bg-slate-500/20 text-slate-400 border-slate-500/20'
+                  : 'bg-red-500/20 text-red-300 border-red-500/30'
+                const badgeLabel = overallScore >= 90 ? 'On Track' : overallScore >= 70 ? 'Close' : daysWithData === 0 ? 'No Log' : 'Behind'
+                const rankColor = idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-600' : 'text-slate-600'
+
+                return (
+                  <div key={athlete.id} className="glass rounded-2xl px-4 py-3 flex items-center gap-3">
+                    <span className={`text-sm font-black w-5 text-center shrink-0 ${rankColor}`}>{idx + 1}</span>
+                    <div className="w-8 h-8 glass-blue rounded-xl flex items-center justify-center font-black text-blue-300 text-xs shrink-0">
+                      {athlete.full_name.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-bold text-sm text-white truncate">{athlete.full_name.split(' ')[0]} {athlete.full_name.split(' ').slice(-1)[0]}</p>
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${badgeColor}`}>{badgeLabel}</span>
+                      </div>
+                      {/* Spark line */}
+                      <div className="flex items-end gap-0.5 h-5">
+                        {spark.map((val, si) => (
+                          <div key={si} className="flex-1 bg-white/10 rounded-sm overflow-hidden h-full flex items-end">
+                            <div
+                              className="w-full rounded-sm"
+                              style={{ height: `${val}%`, background: val >= 90 ? '#22c55e' : val > 0 ? '#3b82f6' : 'transparent' }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right space-y-0.5">
+                      <div className="flex items-center gap-2 justify-end">
+                        <span className="text-xs text-slate-500">🔥{calPctVal}%</span>
+                        <span className="text-xs text-slate-500">💪{proPctVal}%</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <span className={`text-sm font-black ${overallScore >= 90 ? 'text-green-400' : overallScore >= 70 ? 'text-yellow-400' : daysWithData === 0 ? 'text-slate-500' : 'text-red-400'}`}>{overallScore}%</span>
+                        {streak > 0 && <span className="text-xs text-orange-400">{streak}🔥</span>}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )
