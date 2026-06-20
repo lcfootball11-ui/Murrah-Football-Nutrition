@@ -24,6 +24,7 @@ function pct(val: number, target: number) {
 export default function DashboardClient({
   coachName,
   coaches = [],
+  coachWeeklyLogs = [],
   athletes,
   logs,
   suppLogs,
@@ -37,6 +38,7 @@ export default function DashboardClient({
 }: {
   coachName: string
   coaches?: Coach[]
+  coachWeeklyLogs?: WeeklyLog[]
   athletes: Athlete[]
   logs: Log[]
   suppLogs: SuppLog[]
@@ -1298,7 +1300,8 @@ export default function DashboardClient({
               <span className="text-blue-400 text-lg">→</span>
             </a>
 
-            <div className="space-y-2 max-h-56 overflow-y-auto">
+            {/* Coaches list */}
+            <div className="space-y-2">
               {coaches.length === 0 && (
                 <p className="text-slate-500 text-sm text-center py-6">No coaches found</p>
               )}
@@ -1315,6 +1318,99 @@ export default function DashboardClient({
                 </div>
               ))}
             </div>
+
+            {/* Coach nutrition leaderboard */}
+            {coaches.length > 0 && (() => {
+              const coachScores = coaches.map(coach => {
+                const target = targets.find(t => t.user_id === coach.id)
+                const calTarget = target?.calories ?? 2000
+                const proTarget = target?.protein ?? 150
+                const plan = target?.plan ?? 'loss'
+
+                const todayLogs = logs.filter(l => l.user_id === coach.id)
+                const totalCal = todayLogs.reduce((s, l) => s + l.calories, 0)
+                const totalPro = todayLogs.reduce((s, l) => s + l.protein, 0)
+
+                const calPct = calTarget > 0
+                  ? plan === 'loss'
+                    ? totalCal >= 700 && totalCal <= calTarget * 1.05 ? 100
+                      : totalCal < 700 ? Math.round((totalCal / 700) * 100)
+                      : Math.max(0, Math.round((1 - (totalCal - calTarget) / calTarget) * 100))
+                    : Math.min(Math.round((totalCal / calTarget) * 100), 100)
+                  : 0
+                const proPct = proTarget > 0 ? Math.min(Math.round((totalPro / proTarget) * 100), 100) : 0
+                const overallScore = Math.round((calPct + proPct) / 2)
+                const daysWithData = todayLogs.length > 0 ? 1 : 0
+
+                const spark: number[] = []
+                const d = new Date(today + 'T12:00:00')
+                for (let i = 6; i >= 0; i--) {
+                  const dd = new Date(d)
+                  dd.setDate(dd.getDate() - i)
+                  const ds = dd.toISOString().split('T')[0]
+                  const dayLogs = coachWeeklyLogs.filter(l => l.user_id === coach.id && l.log_date === ds)
+                  const dayCal = dayLogs.reduce((s, l) => s + l.calories, 0)
+                  spark.push(Math.min(Math.round((dayCal / calTarget) * 100), 100))
+                }
+
+                return { coach, overallScore, calPct, proPct, daysWithData, spark }
+              }).sort((a, b) => b.overallScore - a.overallScore)
+
+              return (
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 mt-1">🏆 Staff Nutrition — Today</p>
+                  <div className="space-y-2">
+                    {coachScores.map((entry, idx) => {
+                      const { coach, overallScore, calPct, proPct, daysWithData, spark } = entry
+                      const badgeColor = overallScore >= 90 ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                        : overallScore >= 70 ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                        : daysWithData === 0 ? 'bg-slate-500/20 text-slate-400 border-slate-500/20'
+                        : 'bg-red-500/20 text-red-300 border-red-500/30'
+                      const badgeLabel = overallScore >= 90 ? 'On Track' : overallScore >= 70 ? 'Close' : daysWithData === 0 ? 'No Log' : 'Behind'
+                      const rankColor = idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-600' : 'text-slate-600'
+                      const scoreColor = overallScore >= 90 ? 'text-green-400' : overallScore >= 70 ? 'text-yellow-400' : daysWithData === 0 ? 'text-slate-500' : 'text-red-400'
+
+                      return (
+                        <div key={coach.id} className="glass rounded-2xl px-3 py-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <span className={`text-sm font-black w-5 text-center shrink-0 ${rankColor}`}>{idx + 1}</span>
+                            <div className="w-7 h-7 glass-blue rounded-lg flex items-center justify-center font-black text-blue-300 text-xs shrink-0">
+                              {coach.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className="font-bold text-sm text-white truncate">{coach.full_name}</p>
+                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded border shrink-0 ${badgeColor}`}>{badgeLabel}</span>
+                              </div>
+                              <div className="flex items-end gap-0.5 mt-1.5">
+                                {spark.map((val, si) => {
+                                  const dd = new Date(today + 'T12:00:00')
+                                  dd.setDate(dd.getDate() - (6 - si))
+                                  const dayLetter = dd.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1)
+                                  const isToday = si === 6
+                                  return (
+                                    <div key={si} className="flex-1 flex flex-col items-center gap-0.5">
+                                      <div className="w-full bg-white/10 rounded-sm overflow-hidden h-3 flex items-end">
+                                        <div className="w-full rounded-sm" style={{ height: `${Math.max(val, val > 0 ? 15 : 0)}%`, background: val >= 90 ? '#22c55e' : val > 0 ? '#3b82f6' : 'transparent' }} />
+                                      </div>
+                                      <span className={`text-[8px] font-bold leading-none ${isToday ? 'text-blue-400' : 'text-slate-600'}`}>{dayLetter}</span>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <p className={`text-base font-black ${scoreColor}`}>{overallScore}%</p>
+                              <p className="text-xs text-slate-500">{calPct}% cal</p>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })()}
           </div>
         </div>
       )}

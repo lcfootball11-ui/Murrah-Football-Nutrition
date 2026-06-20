@@ -52,13 +52,14 @@ export default async function DashboardPage() {
     .order('full_name')
 
   const athleteIds = (athletes ?? []).map(a => a.id)
+  const coachIds = (coaches ?? []).map(c => c.id)
 
   // Calculate date range for last 7 days
   const sevenDaysAgo = new Date(today + 'T12:00:00')
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
   const weekStartDate = sevenDaysAgo.toISOString().split('T')[0]
 
-  const [logsRes, suppLogsRes, targetsRes, allLogsRes, weeklyLogsRes, weightLogsRes] = await Promise.all([
+  const [logsRes, suppLogsRes, targetsRes, allLogsRes, weeklyLogsRes, weightLogsRes, coachWeeklyLogsRes] = await Promise.all([
     admin.from('nutrition_logs').select('user_id, calories, protein, carbs, fat').eq('log_date', today),
     admin.from('supplement_logs').select('user_id, supplement_name, taken').eq('log_date', today),
     admin.from('macro_targets').select('*'),
@@ -70,6 +71,9 @@ export default async function DashboardPage() {
       : Promise.resolve({ data: [] }),
     athleteIds.length > 0
       ? admin.from('weight_logs').select('user_id, log_date, weight_lbs').in('user_id', athleteIds).order('log_date', { ascending: false })
+      : Promise.resolve({ data: [] }),
+    coachIds.length > 0
+      ? admin.from('nutrition_logs').select('user_id, log_date, calories, protein').gte('log_date', weekStartDate).lte('log_date', today).in('user_id', coachIds)
       : Promise.resolve({ data: [] }),
   ])
 
@@ -133,6 +137,7 @@ export default async function DashboardPage() {
     <DashboardClient
       coachName={profile.full_name}
       coaches={coaches ?? []}
+      coachWeeklyLogs={coachWeeklyLogsRes.data ?? []}
       athletes={athletes ?? []}
       logs={logsRes.data ?? []}
       suppLogs={suppLogsRes.data ?? []}
