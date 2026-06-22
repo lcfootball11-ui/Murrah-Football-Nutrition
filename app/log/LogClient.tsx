@@ -121,7 +121,7 @@ export default function LogClient({
   const [dateLoading, setDateLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [mode, setMode] = useState<'search' | 'manual' | 'restaurant' | 'chipotle' | 'subway' | 'dominos' | 'cookout' | 'mcdonalds' | 'wendys' | 'whataburger' | 'rallys'>('search')
-  const [historyLogs, setHistoryLogs] = useState<{ log_date: string; calories: number; protein: number; carbs: number; fat: number }[]>([])
+  const [historyLogs, setHistoryLogs] = useState<{ log_date: string; calories: number; protein: number; carbs: number; fat: number; fiber?: number }[]>([])
   const [historyWeights, setHistoryWeights] = useState<{ log_date: string; weight_lbs: number }[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
   const [streak, setStreak] = useState(0)
@@ -524,6 +524,51 @@ export default function LogClient({
             )}
           </div>
         )}
+
+        {/* Coach nutrition averages */}
+        {profile.role === 'coach' && (() => {
+          let avgCal = 0, avgPro = 0, avgFiber = 0, label = ''
+
+          if (tab === 'today') {
+            avgCal = totals.calories
+            avgPro = Math.round(totals.protein)
+            avgFiber = Math.round(totals.fiber)
+            label = 'Today\'s Totals'
+          } else {
+            const byDate = historyLogs.reduce<Record<string, { cal: number; pro: number; fiber: number }>>((acc, l) => {
+              if (!acc[l.log_date]) acc[l.log_date] = { cal: 0, pro: 0, fiber: 0 }
+              acc[l.log_date].cal += l.calories
+              acc[l.log_date].pro += l.protein
+              acc[l.log_date].fiber += l.fiber ?? 0
+              return acc
+            }, {})
+            const days = Object.values(byDate)
+            if (days.length > 0) {
+              avgCal = Math.round(days.reduce((s, d) => s + d.cal, 0) / days.length)
+              avgPro = Math.round(days.reduce((s, d) => s + d.pro, 0) / days.length)
+              avgFiber = Math.round(days.reduce((s, d) => s + d.fiber, 0) / days.length)
+            }
+            label = `${tab === 'week' ? '7-Day' : '30-Day'} Daily Average`
+          }
+
+          return (
+            <div className="glass rounded-2xl p-4" style={{ borderLeft: '3px solid rgba(59,130,246,0.6)' }}>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">📊 {label}</p>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                {[
+                  { label: 'Calories', value: avgCal.toLocaleString(), color: '#3b82f6', unit: 'cal' },
+                  { label: 'Protein', value: avgPro, color: '#60a5fa', unit: 'g' },
+                  { label: 'Fiber', value: avgFiber, color: '#22c55e', unit: 'g' },
+                ].map(s => (
+                  <div key={s.label} className="glass rounded-xl p-3">
+                    <p className="text-xl font-black" style={{ color: s.color }}>{s.value}<span className="text-xs text-slate-500 font-normal ml-0.5">{s.unit}</span></p>
+                    <p className="text-xs text-slate-500 mt-0.5">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Supplements */}
         {tab === 'today' && supplements.length > 0 && (

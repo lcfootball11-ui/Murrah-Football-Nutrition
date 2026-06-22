@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   const [logsRes, weightsRes] = await Promise.all([
     admin
       .from('nutrition_logs')
-      .select('log_date, calories, protein, carbs, fat')
+      .select('log_date, calories, protein, carbs, fat, fiber')
       .eq('user_id', user.id)
       .gte('log_date', startStr)
       .lte('log_date', endStr)
