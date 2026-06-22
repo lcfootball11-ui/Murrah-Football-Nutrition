@@ -11,6 +11,7 @@ import ChipotleMealBuilder from '@/app/components/ChipotleMealBuilder'
 import SubwayMealBuilder from '@/app/components/SubwayMealBuilder'
 import DominosMealBuilder from '@/app/components/DominosMealBuilder'
 import CookOutMealBuilder from '@/app/components/CookOutMealBuilder'
+import ChallengeCard from '@/app/components/ChallengeCard'
 import FastFoodMealBuilder, { MCDONALDS_MENU, WENDYS_MENU, WHATABURGER_MENU, RALLYS_MENU, CHICKFILA_MENU, BOSTONS_MENU, LONGHORN_MENU, MCALISTERS_MENU, BRENTS_MENU, PIGANDPINT_MENU, WINGSTOP_MENU } from '@/app/components/FastFoodMealBuilder'
 
 type FoodResult = {
@@ -571,6 +572,11 @@ export default function LogClient({
           <div className="px-4 py-0">
             <NutritionStreakBadge />
           </div>
+        )}
+
+        {/* Active Challenges */}
+        {tab === 'today' && profile.role === 'athlete' && (
+          <ChallengeCard />
         )}
 
         {/* Food log - today */}
