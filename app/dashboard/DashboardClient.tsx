@@ -478,7 +478,7 @@ export default function DashboardClient({
                 label: 'Longest Streak',
                 value: longestStreak,
                 emoji: '🔥',
-                subtext: longestStreakAthlete ? longestStreakAthlete.full_name : 'N/A'
+                subtext: longestStreak > 0 && longestStreakAthlete ? longestStreakAthlete.full_name : undefined
               },
             ].map(({ label, value, emoji, subtext }) => (
               <div key={label} className="glass-blue rounded-2xl p-3 text-center">
@@ -512,7 +512,7 @@ export default function DashboardClient({
                 <p className="text-xs font-bold text-purple-300 uppercase tracking-wide mb-1">💪 Nutrition Streak</p>
                 <p className="text-2xl font-black text-white mb-2">{longestNutritionStreak}d</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {nutritionLeaders.map(a => (
+                  {longestNutritionStreak > 0 && nutritionLeaders.map(a => (
                     <span key={a.id} className="text-xs font-bold bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded-full">
                       {a.full_name.split(' ')[0]}
                     </span>
@@ -524,7 +524,7 @@ export default function DashboardClient({
                 <p className="text-xs font-bold text-blue-300 uppercase tracking-wide mb-1">🔥 Logging Streak</p>
                 <p className="text-2xl font-black text-white mb-2">{longestLoggingStreak}d</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {loggingLeaders.map(a => (
+                  {longestLoggingStreak > 0 && loggingLeaders.map(a => (
                     <span key={a.id} className="text-xs font-bold bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded-full">
                       {a.full_name.split(' ')[0]}
                     </span>
