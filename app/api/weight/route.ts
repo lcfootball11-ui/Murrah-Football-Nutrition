@@ -23,11 +23,11 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = adminClient()
-  const { data, error } = await admin.from('weight_logs').insert({
+  const { data, error } = await admin.from('weight_logs').upsert({
     user_id: user.id,
     log_date,
     weight_lbs: parseFloat(weight_lbs),
-  }).select().single()
+  }, { onConflict: 'user_id,log_date' }).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ data })
