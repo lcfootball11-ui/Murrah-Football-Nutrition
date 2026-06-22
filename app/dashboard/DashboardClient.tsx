@@ -81,6 +81,7 @@ export default function DashboardClient({
   const [newChallenge, setNewChallenge] = useState({ title: '', description: '', goal_type: 'reps', goal_total: '', unit: '', reward: '', scope: 'team', position_group: '', start_date: '', end_date: '' })
   const [creatingChallenge, setCreatingChallenge] = useState(false)
   const [reviewingId, setReviewingId] = useState<string | null>(null)
+  const [challengeError, setChallengeError] = useState<string | null>(null)
   const [settingsTab, setSettingsTab] = useState<'email' | 'password'>('email')
   const [lbPeriod, setLbPeriod] = useState<'today' | 'week'>('today')
   const [lbSort, setLbSort] = useState<'overall' | 'calories' | 'protein' | 'streak'>('overall')
@@ -138,7 +139,12 @@ export default function DashboardClient({
   }
 
   async function createChallenge() {
-    if (!newChallenge.title || !newChallenge.goal_total || !newChallenge.unit || !newChallenge.start_date || !newChallenge.end_date) return
+    setChallengeError(null)
+    if (!newChallenge.title) { setChallengeError('Title is required'); return }
+    if (!newChallenge.goal_total) { setChallengeError('Goal amount is required'); return }
+    if (!newChallenge.unit) { setChallengeError('Unit is required (e.g. pushups, miles)'); return }
+    if (!newChallenge.start_date) { setChallengeError('Start date is required'); return }
+    if (!newChallenge.end_date) { setChallengeError('End date is required'); return }
     setCreatingChallenge(true)
     const res = await fetch('/api/challenges/admin', {
       method: 'POST',
@@ -1665,10 +1671,13 @@ export default function DashboardClient({
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Reward (optional)</label>
                     <input type="text" value={newChallenge.reward} onChange={e => setNewChallenge(p => ({ ...p, reward: e.target.value }))} placeholder="e.g. Coach-cooked meal" className="w-full glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-yellow-500/50 placeholder-slate-600 text-sm" />
                   </div>
+                  {challengeError && (
+                    <p className="text-xs text-red-400 text-center -mt-1">{challengeError}</p>
+                  )}
                   <button
                     onClick={createChallenge}
-                    disabled={creatingChallenge || !newChallenge.title || !newChallenge.goal_total || !newChallenge.unit || !newChallenge.start_date || !newChallenge.end_date}
-                    className="w-full py-3.5 rounded-2xl text-white font-bold disabled:opacity-30"
+                    disabled={creatingChallenge}
+                    className="w-full py-3.5 rounded-2xl text-white font-bold disabled:opacity-50"
                     style={{ background: 'linear-gradient(135deg,#ca8a04,#facc15)', boxShadow: '0 0 20px rgba(250,204,21,0.3)' }}
                   >
                     {creatingChallenge ? 'Creating…' : 'Create Challenge 🏆'}
