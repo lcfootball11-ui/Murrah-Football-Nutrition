@@ -25,10 +25,23 @@ export async function GET() {
 
   const { data: submissions } = await admin
     .from('challenge_submissions')
-    .select('*, profiles(full_name)')
+    .select('*')
     .order('created_at', { ascending: false })
 
-  return NextResponse.json({ challenges: challenges ?? [], submissions: submissions ?? [] })
+  // Attach athlete names manually to avoid ambiguous FK join (user_id + reviewed_by both ref profiles)
+  const userIds = [...new Set((submissions ?? []).map(s => s.user_id))]
+  const { data: profilesData } = userIds.length > 0
+    ? await admin.from('profiles').select('id, full_name').in('id', userIds)
+    : { data: [] }
+  const profileMap: Record<string, string> = {}
+  for (const p of profilesData ?? []) profileMap[p.id] = p.full_name
+
+  const enrichedSubmissions = (submissions ?? []).map(s => ({
+    ...s,
+    profiles: { full_name: profileMap[s.user_id] ?? 'Unknown' },
+  }))
+
+  return NextResponse.json({ challenges: challenges ?? [], submissions: enrichedSubmissions })
 }
 
 // POST: create a challenge
