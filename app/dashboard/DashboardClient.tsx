@@ -3,11 +3,13 @@
 import { useState, useTransition, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History, Settings, LayoutDashboard } from 'lucide-react'
+import { LogOut, Users, ChevronDown, ChevronUp, Plus, X, Target, History, Settings, LayoutDashboard, Trophy, CheckCircle, XCircle, ExternalLink, Clock } from 'lucide-react'
 import NotificationBanner from '@/app/components/NotificationBanner'
 // import WeightTrendChart from './WeightTrendChart' // TODO: Re-enable when weight data is more robust
 
 type Athlete = { id: string; full_name: string; email?: string; phone_number?: string | null; reminder_enabled?: boolean }
+type ChallengeData = { id: string; title: string; description: string | null; goal_type: string; goal_total: number; unit: string; reward: string | null; scope: string; position_group: string | null; start_date: string; end_date: string }
+type SubmissionData = { id: string; challenge_id: string; user_id: string; value: number; video_url: string | null; note: string | null; status: string; created_at: string; profiles: { full_name: string } | null }
 type Coach = { id: string; full_name: string; email?: string }
 type Log = { user_id: string; calories: number; protein: number; carbs: number; fat: number }
 type SuppLog = { user_id: string; supplement_name: string; taken: boolean }
@@ -71,6 +73,14 @@ export default function DashboardClient({
   const [generatingPassword, setGeneratingPassword] = useState<string | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showCoaches, setShowCoaches] = useState(false)
+  const [showChallenges, setShowChallenges] = useState(false)
+  const [challengeTab, setChallengeTab] = useState<'active' | 'review' | 'new'>('active')
+  const [challenges, setChallenges] = useState<ChallengeData[]>([])
+  const [submissions, setSubmissions] = useState<SubmissionData[]>([])
+  const [challengesLoading, setChallengesLoading] = useState(false)
+  const [newChallenge, setNewChallenge] = useState({ title: '', description: '', goal_type: 'reps', goal_total: '', unit: '', reward: '', scope: 'team', position_group: '', start_date: '', end_date: '' })
+  const [creatingChallenge, setCreatingChallenge] = useState(false)
+  const [reviewingId, setReviewingId] = useState<string | null>(null)
   const [settingsTab, setSettingsTab] = useState<'email' | 'password'>('email')
   const [lbPeriod, setLbPeriod] = useState<'today' | 'week'>('today')
   const [lbSort, setLbSort] = useState<'overall' | 'calories' | 'protein' | 'streak'>('overall')
@@ -116,6 +126,48 @@ export default function DashboardClient({
   async function signOut() {
     await supabase.auth.signOut()
     startTransition(() => router.push('/login'))
+  }
+
+  async function loadChallenges() {
+    setChallengesLoading(true)
+    const res = await fetch('/api/challenges/admin')
+    const { challenges: c, submissions: s } = await res.json()
+    setChallenges(c ?? [])
+    setSubmissions(s ?? [])
+    setChallengesLoading(false)
+  }
+
+  async function createChallenge() {
+    if (!newChallenge.title || !newChallenge.goal_total || !newChallenge.unit || !newChallenge.start_date || !newChallenge.end_date) return
+    setCreatingChallenge(true)
+    const res = await fetch('/api/challenges/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...newChallenge, goal_total: parseFloat(newChallenge.goal_total) }),
+    })
+    const { data } = await res.json()
+    if (data) {
+      setChallenges(prev => [data, ...prev])
+      setNewChallenge({ title: '', description: '', goal_type: 'reps', goal_total: '', unit: '', reward: '', scope: 'team', position_group: '', start_date: '', end_date: '' })
+      setChallengeTab('active')
+    }
+    setCreatingChallenge(false)
+  }
+
+  async function deleteChallenge(id: string) {
+    await fetch('/api/challenges/admin', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    setChallenges(prev => prev.filter(c => c.id !== id))
+  }
+
+  async function reviewSubmission(id: string, status: 'approved' | 'rejected') {
+    setReviewingId(id)
+    await fetch('/api/challenges/review', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    })
+    setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status } : s))
+    setReviewingId(null)
   }
 
   async function saveCredentials() {
@@ -390,6 +442,14 @@ export default function DashboardClient({
               <p className="text-slate-400 text-xs mt-0.5">{today}</p>
             </div>
             <div className="flex items-center gap-2">
+              <button onClick={() => { setShowChallenges(true); loadChallenges() }} className="glass rounded-xl p-2.5 text-yellow-400 hover:text-yellow-300 transition-colors relative" title="Challenges">
+                <Trophy size={18} />
+                {submissions.filter(s => s.status === 'pending').length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {submissions.filter(s => s.status === 'pending').length}
+                  </span>
+                )}
+              </button>
               <button onClick={() => setShowCoaches(true)} className="glass rounded-xl p-2.5 text-slate-400 hover:text-white transition-colors" title="Coaches">
                 <Users size={18} />
               </button>
@@ -1411,6 +1471,211 @@ export default function DashboardClient({
                 </div>
               )
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* Challenges Modal */}
+      {showChallenges && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end" onClick={e => e.target === e.currentTarget && setShowChallenges(false)}>
+          <div className="w-full rounded-t-3xl flex flex-col animate-slide-up" style={{ background: '#0d1433', border: '1px solid rgba(250,204,21,0.25)', borderBottom: 'none', maxHeight: '92dvh' }}>
+            <div className="px-5 pt-5 pb-3 shrink-0">
+              <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-black text-xl flex items-center gap-2">
+                  <Trophy size={20} className="text-yellow-400" /> Challenges
+                </h3>
+                <button onClick={() => setShowChallenges(false)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
+              </div>
+              {/* Tabs */}
+              <div className="flex glass rounded-2xl p-1 gap-1">
+                {([['active', 'Active'], ['review', `Review${submissions.filter(s => s.status === 'pending').length > 0 ? ` (${submissions.filter(s => s.status === 'pending').length})` : ''}`], ['new', '+ New']] as const).map(([t, label]) => (
+                  <button key={t} onClick={() => setChallengeTab(t)} className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${challengeTab === t ? 'btn-blue text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="overflow-y-auto px-5 pb-8 flex-1">
+              {challengesLoading ? (
+                <div className="text-center py-10"><div className="text-3xl animate-bounce">🏆</div><p className="text-slate-500 text-sm mt-2">Loading…</p></div>
+              ) : challengeTab === 'active' ? (
+                <div className="space-y-4 mt-2">
+                  {challenges.length === 0 && (
+                    <div className="glass rounded-2xl py-10 text-center">
+                      <p className="text-3xl mb-2">🏆</p>
+                      <p className="text-slate-500 text-sm">No challenges yet</p>
+                      <button onClick={() => setChallengeTab('new')} className="mt-3 text-xs text-blue-400 hover:text-blue-300">Create one →</button>
+                    </div>
+                  )}
+                  {challenges.map(c => {
+                    const approved = submissions.filter(s => s.challenge_id === c.id && s.status === 'approved')
+                    const pending = submissions.filter(s => s.challenge_id === c.id && s.status === 'pending')
+                    const total = approved.reduce((sum, s) => sum + Number(s.value), 0)
+                    const pct = Math.min(Math.round((total / c.goal_total) * 100), 100)
+                    const today2 = new Date().toISOString().split('T')[0]
+                    const isActive = c.start_date <= today2 && c.end_date >= today2
+                    const isExpired = c.end_date < today2
+                    return (
+                      <div key={c.id} className="glass rounded-2xl p-4 border border-white/5" style={{ borderLeft: `3px solid ${pct >= 100 ? '#22c55e' : '#facc15'}` }}>
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="font-black text-white">{c.title}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              {c.scope === 'team' ? '🏈 Team' : `📍 ${c.position_group}`}
+                              {' · '}
+                              <span className={isActive ? 'text-green-400' : isExpired ? 'text-red-400' : 'text-slate-500'}>
+                                {isActive ? 'Active' : isExpired ? 'Ended' : 'Upcoming'}
+                              </span>
+                              {' · '}{c.start_date} → {c.end_date}
+                            </p>
+                          </div>
+                          <button onClick={() => deleteChallenge(c.id)} className="text-slate-700 hover:text-red-400 transition-colors p-1 shrink-0"><X size={14} /></button>
+                        </div>
+                        {c.description && <p className="text-xs text-slate-400 mb-2">{c.description}</p>}
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-slate-500">Progress</span>
+                          <span className="font-bold" style={{ color: pct >= 100 ? '#22c55e' : '#facc15' }}>{total.toLocaleString()} / {c.goal_total.toLocaleString()} {c.unit}</span>
+                        </div>
+                        <div className="h-2 bg-white/5 rounded-full overflow-hidden mb-2">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct >= 100 ? 'linear-gradient(90deg,#22c55e,#4ade80)' : 'linear-gradient(90deg,#ca8a04,#facc15)' }} />
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span>✓ {approved.length} approved</span>
+                          {pending.length > 0 && <span className="text-yellow-400">⏳ {pending.length} pending</span>}
+                          {c.reward && <span className="text-yellow-400 ml-auto">🎁 {c.reward}</span>}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : challengeTab === 'review' ? (
+                <div className="space-y-3 mt-2">
+                  {submissions.filter(s => s.status === 'pending').length === 0 && (
+                    <div className="glass rounded-2xl py-10 text-center">
+                      <p className="text-3xl mb-2">✅</p>
+                      <p className="text-slate-500 text-sm">No pending submissions</p>
+                    </div>
+                  )}
+                  {/* Pending first, then reviewed */}
+                  {['pending', 'approved', 'rejected'].map(statusGroup => {
+                    const group = submissions.filter(s => s.status === statusGroup)
+                    if (group.length === 0) return null
+                    return (
+                      <div key={statusGroup}>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                          {statusGroup === 'pending' ? <><Clock size={11} className="text-yellow-400" /><span className="text-yellow-400">Needs Review ({group.length})</span></> :
+                           statusGroup === 'approved' ? <><CheckCircle size={11} className="text-green-400" /><span className="text-green-400">Approved</span></> :
+                           <><XCircle size={11} className="text-red-400" /><span className="text-red-400">Rejected</span></>}
+                        </p>
+                        {group.map(s => {
+                          const challenge = challenges.find(c => c.id === s.challenge_id)
+                          return (
+                            <div key={s.id} className={`glass rounded-2xl p-4 mb-2 border ${s.status === 'pending' ? 'border-yellow-500/20' : 'border-white/5'}`}>
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <p className="font-bold text-white text-sm">{s.profiles?.full_name ?? 'Unknown'}</p>
+                                  <p className="text-xs text-slate-500">{challenge?.title ?? 'Unknown challenge'}</p>
+                                </div>
+                                <p className="text-lg font-black text-white">{Number(s.value).toLocaleString()} <span className="text-xs text-slate-400 font-normal">{challenge?.unit}</span></p>
+                              </div>
+                              {s.note && <p className="text-xs text-slate-400 mb-2 italic">"{s.note}"</p>}
+                              <div className="flex items-center gap-2">
+                                {s.video_url && (
+                                  <a href={s.video_url} target="_blank" rel="noopener noreferrer" className="flex-1 py-2 rounded-xl glass text-xs text-blue-400 font-bold flex items-center justify-center gap-1.5 hover:text-blue-300">
+                                    <ExternalLink size={12} /> Watch Video
+                                  </a>
+                                )}
+                                {s.status === 'pending' && (
+                                  <>
+                                    <button
+                                      onClick={() => reviewSubmission(s.id, 'approved')}
+                                      disabled={reviewingId === s.id}
+                                      className="flex-1 py-2 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                      style={{ background: 'linear-gradient(135deg,#15803d,#22c55e)' }}
+                                    >
+                                      <CheckCircle size={12} /> Approve
+                                    </button>
+                                    <button
+                                      onClick={() => reviewSubmission(s.id, 'rejected')}
+                                      disabled={reviewingId === s.id}
+                                      className="flex-1 py-2 rounded-xl glass text-xs font-bold text-red-400 flex items-center justify-center gap-1.5 hover:text-red-300 disabled:opacity-50"
+                                    >
+                                      <XCircle size={12} /> Reject
+                                    </button>
+                                  </>
+                                )}
+                                {s.status !== 'pending' && (
+                                  <p className="text-xs text-slate-600 ml-auto">{new Date(s.created_at).toLocaleDateString()}</p>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="space-y-4 mt-2">
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Challenge Title *</label>
+                    <input type="text" value={newChallenge.title} onChange={e => setNewChallenge(p => ({ ...p, title: e.target.value }))} placeholder="e.g. 10,000 Team Pushups" className="w-full glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-yellow-500/50 placeholder-slate-600 text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Description (optional)</label>
+                    <input type="text" value={newChallenge.description} onChange={e => setNewChallenge(p => ({ ...p, description: e.target.value }))} placeholder="Extra details or motivation…" className="w-full glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-yellow-500/50 placeholder-slate-600 text-sm" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Goal Amount *</label>
+                      <input type="number" min="1" value={newChallenge.goal_total} onChange={e => setNewChallenge(p => ({ ...p, goal_total: e.target.value }))} placeholder="10000" className="w-full glass border border-white/10 text-white rounded-xl px-3 py-3 outline-none focus:border-yellow-500/50 placeholder-slate-600 text-sm text-center font-bold" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Unit *</label>
+                      <input type="text" value={newChallenge.unit} onChange={e => setNewChallenge(p => ({ ...p, unit: e.target.value }))} placeholder="pushups, miles…" className="w-full glass border border-white/10 text-white rounded-xl px-3 py-3 outline-none focus:border-yellow-500/50 placeholder-slate-600 text-sm" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Scope</label>
+                    <div className="flex glass rounded-xl p-1 gap-1">
+                      {(['team', 'position'] as const).map(s => (
+                        <button key={s} onClick={() => setNewChallenge(p => ({ ...p, scope: s }))} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all capitalize ${newChallenge.scope === s ? 'btn-blue text-white' : 'text-slate-500'}`}>{s === 'team' ? '🏈 Team-wide' : '📍 Position Group'}</button>
+                      ))}
+                    </div>
+                  </div>
+                  {newChallenge.scope === 'position' && (
+                    <div>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Position Group</label>
+                      <input type="text" value={newChallenge.position_group} onChange={e => setNewChallenge(p => ({ ...p, position_group: e.target.value }))} placeholder="e.g. OL, WR, DB…" className="w-full glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-yellow-500/50 placeholder-slate-600 text-sm" />
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Start Date *</label>
+                      <input type="date" value={newChallenge.start_date} onChange={e => setNewChallenge(p => ({ ...p, start_date: e.target.value }))} className="w-full glass border border-white/10 text-white rounded-xl px-3 py-3 outline-none focus:border-yellow-500/50 text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">End Date *</label>
+                      <input type="date" value={newChallenge.end_date} onChange={e => setNewChallenge(p => ({ ...p, end_date: e.target.value }))} className="w-full glass border border-white/10 text-white rounded-xl px-3 py-3 outline-none focus:border-yellow-500/50 text-sm" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Reward (optional)</label>
+                    <input type="text" value={newChallenge.reward} onChange={e => setNewChallenge(p => ({ ...p, reward: e.target.value }))} placeholder="e.g. Coach-cooked meal" className="w-full glass border border-white/10 text-white rounded-xl px-4 py-3 outline-none focus:border-yellow-500/50 placeholder-slate-600 text-sm" />
+                  </div>
+                  <button
+                    onClick={createChallenge}
+                    disabled={creatingChallenge || !newChallenge.title || !newChallenge.goal_total || !newChallenge.unit || !newChallenge.start_date || !newChallenge.end_date}
+                    className="w-full py-3.5 rounded-2xl text-white font-bold disabled:opacity-30"
+                    style={{ background: 'linear-gradient(135deg,#ca8a04,#facc15)', boxShadow: '0 0 20px rgba(250,204,21,0.3)' }}
+                  >
+                    {creatingChallenge ? 'Creating…' : 'Create Challenge 🏆'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
