@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     // Fetch from USDA
     const apiKey = process.env.USDA_API_KEY ?? 'DEMO_KEY'
     const usdaUrl = `${USDA_BASE}/foods/search?query=${encodeURIComponent(query)}&dataType=Survey%20(FNDDS),SR%20Legacy,Branded&pageSize=15&api_key=${apiKey}`
-    const usdaRes = await fetch(usdaUrl, { next: { revalidate: 3600 } })
+    const usdaRes = await fetch(usdaUrl, { cache: 'no-store' })
     const usdaData = await usdaRes.json()
 
     const usdaFoods = (usdaData.foods ?? []).map((f: Record<string, unknown>) => {
