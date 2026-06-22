@@ -157,6 +157,9 @@ export default function LogClient({
   const [savingPhone, setSavingPhone] = useState(false)
   const [showHandbook, setShowHandbook] = useState(false)
   const [handbookSection, setHandbookSection] = useState<string | null>(null)
+  const [showEditGoals, setShowEditGoals] = useState(false)
+  const [goalsForm, setGoalsForm] = useState({ calories: String(targets?.calories ?? ''), protein: String(targets?.protein ?? '') })
+  const [savingGoals, setSavingGoals] = useState(false)
 
   useEffect(() => {
     const handler = () => setShowHandbook(true)
@@ -550,6 +553,17 @@ export default function LogClient({
           <WeightTracker today={today} />
         )}
 
+        {/* Edit Goals — coaches only */}
+        {tab === 'today' && profile.role === 'coach' && (
+          <button
+            onClick={() => setShowEditGoals(true)}
+            className="w-full glass rounded-2xl px-4 py-3 flex items-center justify-between text-slate-400 hover:text-white transition-colors"
+          >
+            <span className="text-sm font-bold">🎯 Edit My Calorie & Protein Goals</span>
+            <span className="text-xs text-slate-600">cal: {targets?.calories ?? '—'} · pro: {targets?.protein ?? '—'}g</span>
+          </button>
+        )}
+
         {/* Logging Streak */}
         {tab === 'today' && streak > 0 && (
           <div className="px-4 py-0">
@@ -917,6 +931,57 @@ export default function LogClient({
               )}
             </div>{/* end scrollable content */}
           </div>{/* end modal sheet */}
+        </div>
+      )}
+
+      {/* Edit Goals Modal — coaches only */}
+      {showEditGoals && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end" onClick={e => e.target === e.currentTarget && setShowEditGoals(false)}>
+          <div className="w-full rounded-t-3xl p-5 space-y-4 animate-slide-up" style={{ background: '#0d1433', border: '1px solid rgba(59,130,246,0.2)', borderBottom: 'none' }}>
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto" />
+            <div className="flex justify-between items-center">
+              <h3 className="font-black text-xl">🎯 My Nutrition Goals</h3>
+              <button onClick={() => setShowEditGoals(false)} className="glass rounded-xl p-2 text-slate-400 hover:text-white"><X size={18} /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Daily Calories</label>
+                <input
+                  type="number" min="1000" max="6000"
+                  value={goalsForm.calories}
+                  onChange={e => setGoalsForm(p => ({ ...p, calories: e.target.value }))}
+                  className="w-full glass border border-white/10 text-white rounded-xl px-3 py-3 outline-none focus:border-blue-500/50 text-center font-bold text-lg"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Protein (g)</label>
+                <input
+                  type="number" min="50" max="400"
+                  value={goalsForm.protein}
+                  onChange={e => setGoalsForm(p => ({ ...p, protein: e.target.value }))}
+                  className="w-full glass border border-white/10 text-white rounded-xl px-3 py-3 outline-none focus:border-blue-500/50 text-center font-bold text-lg"
+                />
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                if (!goalsForm.calories || !goalsForm.protein) return
+                setSavingGoals(true)
+                await fetch('/api/targets', {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ calories: goalsForm.calories, protein: goalsForm.protein }),
+                })
+                setSavingGoals(false)
+                setShowEditGoals(false)
+              }}
+              disabled={savingGoals || !goalsForm.calories || !goalsForm.protein}
+              className="w-full py-3.5 rounded-2xl btn-blue disabled:opacity-40 text-white font-bold"
+            >
+              {savingGoals ? 'Saving…' : 'Save Goals ✓'}
+            </button>
+            <p className="text-xs text-slate-600 text-center">Changes take effect on your next page load</p>
+          </div>
         </div>
       )}
 
