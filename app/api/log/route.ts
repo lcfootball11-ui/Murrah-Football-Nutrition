@@ -39,7 +39,15 @@ export async function POST(request: NextRequest) {
     insertData.fiber = fiber
   }
 
-  const { data, error } = await admin.from('nutrition_logs').insert(insertData).select().single()
+  let { data, error } = await admin.from('nutrition_logs').insert(insertData).select().single()
+
+  // If fiber column doesn't exist yet (migration not run), retry without it
+  if (error && error.message.includes('fiber')) {
+    delete insertData.fiber
+    const retry = await admin.from('nutrition_logs').insert(insertData).select().single()
+    data = retry.data
+    error = retry.error
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ data })
