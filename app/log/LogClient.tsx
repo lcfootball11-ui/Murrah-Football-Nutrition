@@ -56,6 +56,7 @@ type Targets = {
   carbs: number
   fat: number
   fiber?: number | null
+  goal_weight?: number | null
   supplements: string[]
 } | null
 
@@ -158,7 +159,7 @@ export default function LogClient({
   const [showHandbook, setShowHandbook] = useState(false)
   const [handbookSection, setHandbookSection] = useState<string | null>(null)
   const [showEditGoals, setShowEditGoals] = useState(false)
-  const [goalsForm, setGoalsForm] = useState({ calories: String(targets?.calories ?? ''), protein: String(targets?.protein ?? '') })
+  const [goalsForm, setGoalsForm] = useState({ calories: String(targets?.calories ?? ''), protein: String(targets?.protein ?? ''), goal_weight: String(targets?.goal_weight ?? '') })
   const [savingGoals, setSavingGoals] = useState(false)
 
   useEffect(() => {
@@ -963,6 +964,16 @@ export default function LogClient({
                 />
               </div>
             </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Goal Weight (lbs)</label>
+              <input
+                type="number" min="100" max="400" step="0.1"
+                value={goalsForm.goal_weight}
+                onChange={e => setGoalsForm(p => ({ ...p, goal_weight: e.target.value }))}
+                placeholder="e.g. 185"
+                className="w-full glass border border-white/10 text-white rounded-xl px-3 py-3 outline-none focus:border-blue-500/50 text-center font-bold text-lg placeholder-slate-600"
+              />
+            </div>
             <button
               onClick={async () => {
                 if (!goalsForm.calories || !goalsForm.protein) return
@@ -970,7 +981,7 @@ export default function LogClient({
                 await fetch('/api/targets', {
                   method: 'PATCH',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ calories: goalsForm.calories, protein: goalsForm.protein }),
+                  body: JSON.stringify({ calories: goalsForm.calories, protein: goalsForm.protein, goal_weight: goalsForm.goal_weight || null }),
                 })
                 setSavingGoals(false)
                 setShowEditGoals(false)

@@ -38,11 +38,11 @@ export async function PATCH(request: NextRequest) {
   const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'coach') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { calories, protein } = await request.json()
+  const { calories, protein, goal_weight } = await request.json()
   if (!calories || !protein) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
   const { error } = await admin.from('macro_targets').upsert(
-    { user_id: user.id, calories: parseInt(calories), protein: parseInt(protein) },
+    { user_id: user.id, calories: parseInt(calories), protein: parseInt(protein), goal_weight: goal_weight ? parseFloat(goal_weight) : null },
     { onConflict: 'user_id' }
   )
 
