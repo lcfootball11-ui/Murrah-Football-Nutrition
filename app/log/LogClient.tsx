@@ -12,7 +12,7 @@ import SubwayMealBuilder from '@/app/components/SubwayMealBuilder'
 import DominosMealBuilder from '@/app/components/DominosMealBuilder'
 import CookOutMealBuilder from '@/app/components/CookOutMealBuilder'
 import ChallengeCard from '@/app/components/ChallengeCard'
-import FastFoodMealBuilder, { MCDONALDS_MENU, WENDYS_MENU, WHATABURGER_MENU, RALLYS_MENU, CHICKFILA_MENU, BOSTONS_MENU, LONGHORN_MENU, MCALISTERS_MENU, BRENTS_MENU, PIGANDPINT_MENU, WINGSTOP_MENU } from '@/app/components/FastFoodMealBuilder'
+import FastFoodMealBuilder, { MCDONALDS_MENU, WENDYS_MENU, WHATABURGER_MENU, RALLYS_MENU, CHICKFILA_MENU, BOSTONS_MENU, LONGHORN_MENU, MCALISTERS_MENU, BRENTS_MENU, PIGANDPINT_MENU, WINGSTOP_MENU, CANES_MENU, WAFFLEHOUSE_MENU, ZAXBYS_MENU } from '@/app/components/FastFoodMealBuilder'
 
 type FoodResult = {
   fdcId: number
@@ -120,7 +120,7 @@ export default function LogClient({
   const [suppLogs, setSuppLogs] = useState<SuppLog[]>(initialSuppLogs)
   const [dateLoading, setDateLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
-  const [mode, setMode] = useState<'search' | 'manual' | 'restaurant' | 'chipotle' | 'subway' | 'dominos' | 'cookout' | 'mcdonalds' | 'wendys' | 'whataburger' | 'rallys'>('search')
+  const [mode, setMode] = useState<'search' | 'manual' | 'restaurant' | 'chipotle' | 'subway' | 'dominos' | 'cookout' | 'mcdonalds' | 'wendys' | 'whataburger' | 'rallys' | 'canes' | 'wafflehouse' | 'zaxbys'>('search')
   const [historyLogs, setHistoryLogs] = useState<{ log_date: string; calories: number; protein: number; carbs: number; fat: number; fiber?: number }[]>([])
   const [historyWeights, setHistoryWeights] = useState<{ log_date: string; weight_lbs: number }[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
@@ -836,6 +836,9 @@ export default function LogClient({
                     { mode: 'brents',      emoji: '🧁', name: "Brent's Drugs",            desc: 'Classic diner — burgers, shakes & soda fountain' },
                     { mode: 'pigandpint',  emoji: '🐷', name: "The Pig & Pint",            desc: 'Award-winning BBQ — ribs, brisket, pulled pork & tacos' },
                     { mode: 'wingstop',   emoji: '🍗', name: 'Wingstop',                  desc: 'Classic & boneless wings, tenders, sandwiches & loaded fries' },
+                    { mode: 'canes',      emoji: '🐓', name: "Raising Cane's",             desc: 'Chicken fingers, crinkle fries, Texas toast & Cane\'s sauce' },
+                    { mode: 'wafflehouse', emoji: '🧇', name: 'Waffle House',              desc: 'Waffles, hashbrowns, eggs, biscuits, burgers & dinners' },
+                    { mode: 'zaxbys',    emoji: '🔥', name: "Zaxby's",                    desc: 'Chicken fingers, wings, zalads & sandwiches' },
                   ]
                     .filter(r => r.name.toLowerCase().includes(restaurantSearch.toLowerCase()) || r.desc.toLowerCase().includes(restaurantSearch.toLowerCase()))
                     .map(r => (
@@ -883,6 +886,12 @@ export default function LogClient({
                 <FastFoodMealBuilder restaurantName="The Pig & Pint" menu={PIGANDPINT_MENU} onAdd={addRestaurantMeal} />
               ) : (mode as string) === 'wingstop' ? (
                 <FastFoodMealBuilder restaurantName="Wingstop" menu={WINGSTOP_MENU} onAdd={addRestaurantMeal} />
+              ) : (mode as string) === 'canes' ? (
+                <FastFoodMealBuilder restaurantName="Raising Cane's" menu={CANES_MENU} onAdd={addRestaurantMeal} />
+              ) : (mode as string) === 'wafflehouse' ? (
+                <FastFoodMealBuilder restaurantName="Waffle House" menu={WAFFLEHOUSE_MENU} onAdd={addRestaurantMeal} />
+              ) : (mode as string) === 'zaxbys' ? (
+                <FastFoodMealBuilder restaurantName="Zaxby's" menu={ZAXBYS_MENU} onAdd={addRestaurantMeal} />
               ) : mode === 'search' ? (
                 <div className="space-y-3">
                   <input

@@ -989,6 +989,220 @@ export const PIGANDPINT_MENU: FFCategory[] = [
   },
 ]
 
+export const CANES_MENU: FFCategory[] = [
+  {
+    emoji: '🍗', label: 'Individual Items',
+    items: [
+      { name: 'Chicken Finger (1pc)',   macros: { cal: 130, protein: 13, carbs: 5,  fat: 7  } },
+      { name: 'Crinkle-Cut Fries',      macros: { cal: 400, protein: 5,  carbs: 50, fat: 20 } },
+      { name: 'Texas Toast',            macros: { cal: 150, protein: 4,  carbs: 23, fat: 5  } },
+      { name: 'Coleslaw',               macros: { cal: 100, protein: 1,  carbs: 10, fat: 6  } },
+      { name: "Cane's Sauce",           macros: { cal: 190, protein: 0,  carbs: 6,  fat: 18 } },
+      { name: 'Chicken Sandwich Only',  macros: { cal: 830, protein: 47, carbs: 69, fat: 41 } },
+    ],
+  },
+  {
+    emoji: '🍱', label: 'Combo Meals',
+    items: [
+      { name: '3 Finger Combo',         macros: { cal: 1050, protein: 48, carbs: 83,  fat: 59  } },
+      { name: 'Box Combo',              macros: { cal: 1290, protein: 62, carbs: 98,  fat: 72  } },
+      { name: 'Caniac Combo',           macros: { cal: 1840, protein: 90, carbs: 125, fat: 108 } },
+      { name: 'Sandwich Combo',         macros: { cal: 1140, protein: 51, carbs: 108, fat: 56  } },
+      { name: "Box Combo - Posty Way",  macros: { cal: 1740, protein: 66, carbs: 173, fat: 89  } },
+      { name: "Kid's Combo",            macros: { cal: 650,  protein: 29, carbs: 39,  fat: 41  } },
+    ],
+  },
+]
+
+export const WAFFLEHOUSE_MENU: FFCategory[] = [
+  {
+    emoji: '🧇', label: 'Waffles & Toast',
+    items: [
+      { name: 'Classic Waffle',    macros: { cal: 410, protein: 8, carbs: 55, fat: 18 } },
+      { name: 'White Toast',       macros: { cal: 230, protein: 4, carbs: 26, fat: 13 } },
+      { name: 'Wheat Toast',       macros: { cal: 220, protein: 8, carbs: 22, fat: 12 } },
+      { name: 'Raisin Toast',      macros: { cal: 280, protein: 5, carbs: 38, fat: 13 } },
+    ],
+  },
+  {
+    emoji: '🥚', label: 'Eggs & Omelets',
+    items: [
+      { name: '2 Eggs Scrambled',               macros: { cal: 180, protein: 12, carbs: 2,  fat: 14 } },
+      { name: '2 Egg Cheese Omelet',            macros: { cal: 500, protein: 17, carbs: 3,  fat: 46 } },
+      { name: '2 Egg Ham & Cheese Omelet',      macros: { cal: 560, protein: 26, carbs: 5,  fat: 48 } },
+      { name: '2 Egg Sausage & Cheese Omelet',  macros: { cal: 720, protein: 31, carbs: 4,  fat: 64 } },
+    ],
+  },
+  {
+    emoji: '🥔', label: 'Hashbrowns',
+    items: [
+      { name: 'Hashbrowns Regular',       macros: { cal: 190, protein: 3,  carbs: 29, fat: 7  } },
+      { name: 'Hashbrowns Large',         macros: { cal: 380, protein: 5,  carbs: 59, fat: 14 } },
+      { name: 'Scattered, Smothered & Covered (Reg)', macros: { cal: 370, protein: 10, carbs: 41, fat: 18 } },
+      { name: 'Scattered, Smothered & Covered (Lg)',  macros: { cal: 560, protein: 17, carbs: 71, fat: 24 } },
+      { name: 'All The Way Hashbrowns (Reg)',   macros: { cal: 550, protein: 20, carbs: 44, fat: 32 } },
+      { name: 'All The Way Hashbrowns (Lg)',    macros: { cal: 740, protein: 27, carbs: 74, fat: 39 } },
+    ],
+  },
+  {
+    emoji: '🥓', label: 'Meats',
+    items: [
+      { name: 'Bacon (2 strips)',    macros: { cal: 140, protein: 8,  carbs: 0, fat: 12 } },
+      { name: 'Sausage',            macros: { cal: 260, protein: 10, carbs: 1, fat: 24 } },
+      { name: 'City Ham',           macros: { cal: 110, protein: 15, carbs: 7, fat: 3  } },
+      { name: 'Country Ham',        macros: { cal: 210, protein: 32, carbs: 0, fat: 9  } },
+      { name: 'Pork Chop',          macros: { cal: 310, protein: 46, carbs: 0, fat: 14 } },
+      { name: 'T-Bone Steak',       macros: { cal: 550, protein: 51, carbs: 0, fat: 37 } },
+    ],
+  },
+  {
+    emoji: '🍞', label: 'Biscuits & Breakfast Sandwiches',
+    items: [
+      { name: 'Grilled Biscuit',               macros: { cal: 380, protein: 5,  carbs: 34, fat: 25 } },
+      { name: 'Bacon Egg & Cheese Biscuit',    macros: { cal: 610, protein: 19, carbs: 35, fat: 44 } },
+      { name: 'Sausage Egg & Cheese Biscuit',  macros: { cal: 650, protein: 19, carbs: 35, fat: 48 } },
+      { name: 'Chicken Biscuit',               macros: { cal: 520, protein: 34, carbs: 35, fat: 28 } },
+      { name: 'Ham Egg & Cheese Biscuit',      macros: { cal: 570, protein: 22, carbs: 36, fat: 39 } },
+    ],
+  },
+  {
+    emoji: '🍔', label: 'Burgers & Melts',
+    items: [
+      { name: 'Angus 1/4 LB Hamburger Deluxe',         macros: { cal: 560, protein: 19, carbs: 27, fat: 41 } },
+      { name: 'Angus 1/4 LB Cheeseburger Deluxe',      macros: { cal: 620, protein: 22, carbs: 29, fat: 45 } },
+      { name: 'Double Angus 1/4 LB Cheeseburger',      macros: { cal: 890, protein: 40, carbs: 29, fat: 66 } },
+      { name: 'Texas Grilled Chicken Melt',             macros: { cal: 660, protein: 41, carbs: 43, fat: 35 } },
+      { name: 'Texas Angus Patty Melt',                 macros: { cal: 730, protein: 26, carbs: 42, fat: 50 } },
+      { name: 'Texas Cheesesteak Melt',                 macros: { cal: 650, protein: 28, carbs: 42, fat: 40 } },
+    ],
+  },
+  {
+    emoji: '🍽️', label: 'Dinners',
+    items: [
+      { name: 'Chicken Dinner',      macros: { cal: 565,  protein: 37, carbs: 56, fat: 22 } },
+      { name: 'Country Ham Dinner',  macros: { cal: 635,  protein: 40, carbs: 55, fat: 28 } },
+      { name: 'Pork Chop Dinner',    macros: { cal: 1005, protein: 84, carbs: 55, fat: 49 } },
+      { name: 'T-Bone Dinner',       macros: { cal: 725,  protein: 42, carbs: 56, fat: 37 } },
+      { name: 'Sirloin Dinner',      macros: { cal: 615,  protein: 29, carbs: 55, fat: 30 } },
+    ],
+  },
+  {
+    emoji: '🥗', label: 'Salads & Grilled Chicken',
+    items: [
+      { name: 'Garden Salad',                  macros: { cal: 35,  protein: 2,  carbs: 7, fat: 0 } },
+      { name: 'Grilled Chicken Salad',         macros: { cal: 175, protein: 31, carbs: 8, fat: 3 } },
+      { name: 'Grilled Chicken Sandwich Deluxe', macros: { cal: 490, protein: 33, carbs: 30, fat: 27 } },
+    ],
+  },
+  {
+    emoji: '🥣', label: 'Sides',
+    items: [
+      { name: 'Grits',          macros: { cal: 90,  protein: 1, carbs: 16, fat: 3 } },
+      { name: 'Apple Butter',   macros: { cal: 80,  protein: 0, carbs: 19, fat: 0 } },
+      { name: 'Orange Juice',   macros: { cal: 110, protein: 2, carbs: 26, fat: 0 } },
+    ],
+  },
+]
+
+export const ZAXBYS_MENU: FFCategory[] = [
+  {
+    emoji: '🥗', label: 'Zalads',
+    items: [
+      { name: 'Grilled House Zalad',   macros: { cal: 560, protein: 48, carbs: 34, fat: 27 } },
+      { name: 'Fried House Zalad',     macros: { cal: 660, protein: 44, carbs: 42, fat: 37 } },
+      { name: 'Garden House Zalad',    macros: { cal: 410, protein: 17, carbs: 33, fat: 25 } },
+      { name: 'Grilled Cobb Zalad',    macros: { cal: 680, protein: 58, carbs: 35, fat: 35 } },
+      { name: 'Fried Cobb Zalad',      macros: { cal: 780, protein: 55, carbs: 43, fat: 45 } },
+      { name: 'Garden Cobb Zalad',     macros: { cal: 530, protein: 27, carbs: 34, fat: 34 } },
+    ],
+  },
+  {
+    emoji: '🥪', label: 'Sandwiches',
+    items: [
+      { name: 'Kickin\' Chicken Sandwich',       macros: { cal: 690, protein: 34, carbs: 51, fat: 39 } },
+      { name: 'Grilled Chicken Sandwich',        macros: { cal: 470, protein: 38, carbs: 35, fat: 20 } },
+      { name: 'Signature Sandwich (Zax Sauce)',  macros: { cal: 600, protein: 31, carbs: 45, fat: 32 } },
+      { name: 'Signature Sandwich (Spicy Zax)',  macros: { cal: 590, protein: 31, carbs: 45, fat: 31 } },
+      { name: 'Signature Club (Zax Sauce)',      macros: { cal: 720, protein: 39, carbs: 46, fat: 40 } },
+      { name: 'Signature Club (Spicy Zax)',      macros: { cal: 710, protein: 39, carbs: 46, fat: 40 } },
+      { name: 'Nibblerz (3pc)',                  macros: { cal: 1030, protein: 41, carbs: 81, fat: 60 } },
+    ],
+  },
+  {
+    emoji: '🍗', label: 'Chicken Finger Plates',
+    items: [
+      { name: 'Chicken Finger Plate (4pc)',          macros: { cal: 1110, protein: 45, carbs: 98,  fat: 60 } },
+      { name: 'Chicken Finger Plate (5pc)',          macros: { cal: 1190, protein: 54, carbs: 101, fat: 64 } },
+      { name: 'Chicken Finger Plate (6pc)',          macros: { cal: 1280, protein: 63, carbs: 104, fat: 68 } },
+      { name: 'Buffalo Chicken Finger Plate (4pc)',  macros: { cal: 1130, protein: 46, carbs: 98,  fat: 62 } },
+      { name: 'Buffalo Chicken Finger Plate (5pc)',  macros: { cal: 1220, protein: 55, carbs: 102, fat: 66 } },
+      { name: 'Buffalo Chicken Finger Plate (6pc)',  macros: { cal: 1310, protein: 64, carbs: 106, fat: 70 } },
+    ],
+  },
+  {
+    emoji: '🍖', label: 'Wings & Things Meals',
+    items: [
+      { name: 'Boneless Wings & Things',         macros: { cal: 1450, protein: 62, carbs: 106, fat: 87 } },
+      { name: 'Buffalo Boneless Wings & Things', macros: { cal: 1460, protein: 63, carbs: 105, fat: 88 } },
+      { name: 'Traditional Wings & Things',      macros: { cal: 1440, protein: 79, carbs: 84,  fat: 88 } },
+      { name: 'Buffalo Traditional Wings & Things', macros: { cal: 1450, protein: 79, carbs: 83, fat: 89 } },
+      { name: 'Boneless Wings Meal (5pc)',        macros: { cal: 1040, protein: 34, carbs: 92,  fat: 60 } },
+      { name: 'Traditional Wings Meal (5pc)',     macros: { cal: 1030, protein: 51, carbs: 70,  fat: 61 } },
+      { name: 'Big Zax Snak Meal',               macros: { cal: 890,  protein: 36, carbs: 80,  fat: 48 } },
+      { name: 'Buffalo Big Zax Snak Meal',       macros: { cal: 900,  protein: 36, carbs: 79,  fat: 50 } },
+    ],
+  },
+  {
+    emoji: '🔥', label: 'Boneless Wings (5pc)',
+    items: [
+      { name: 'Boneless Wings — No Sauce',          macros: { cal: 390, protein: 26, carbs: 22, fat: 22 } },
+      { name: 'Boneless Wings — Wimpy',             macros: { cal: 410, protein: 26, carbs: 26, fat: 22 } },
+      { name: 'Boneless Wings — Tongue Torch',      macros: { cal: 400, protein: 26, carbs: 24, fat: 23 } },
+      { name: 'Boneless Wings — Nuclear',           macros: { cal: 400, protein: 26, carbs: 24, fat: 23 } },
+      { name: 'Boneless Wings — Buffalo Garlic',    macros: { cal: 450, protein: 26, carbs: 23, fat: 29 } },
+      { name: 'Boneless Wings — HHM',               macros: { cal: 480, protein: 26, carbs: 28, fat: 30 } },
+      { name: 'Boneless Wings — Sweet & Spicy',     macros: { cal: 450, protein: 26, carbs: 35, fat: 23 } },
+      { name: 'Boneless Wings — Teriyaki',          macros: { cal: 430, protein: 26, carbs: 31, fat: 23 } },
+      { name: 'Boneless Wings — BBQ',               macros: { cal: 450, protein: 26, carbs: 36, fat: 22 } },
+    ],
+  },
+  {
+    emoji: '🍗', label: 'Traditional Wings (5pc)',
+    items: [
+      { name: 'Traditional Wings — No Sauce',     macros: { cal: 390, protein: 43, carbs: 0,  fat: 24 } },
+      { name: 'Traditional Wings — Wimpy',        macros: { cal: 400, protein: 43, carbs: 4,  fat: 24 } },
+      { name: 'Traditional Wings — Tongue Torch', macros: { cal: 400, protein: 43, carbs: 2,  fat: 24 } },
+      { name: 'Traditional Wings — Nuclear',      macros: { cal: 400, protein: 43, carbs: 2,  fat: 24 } },
+      { name: 'Traditional Wings — Buffalo Garlic', macros: { cal: 450, protein: 43, carbs: 1, fat: 30 } },
+      { name: 'Traditional Wings — HHM',          macros: { cal: 480, protein: 43, carbs: 6,  fat: 30 } },
+      { name: 'Traditional Wings — Sweet & Spicy', macros: { cal: 450, protein: 43, carbs: 13, fat: 24 } },
+      { name: 'Traditional Wings — Teriyaki',     macros: { cal: 430, protein: 43, carbs: 9,  fat: 24 } },
+      { name: 'Traditional Wings — BBQ',          macros: { cal: 450, protein: 43, carbs: 14, fat: 23 } },
+    ],
+  },
+  {
+    emoji: '🥩', label: 'Chicken Fingers (1pc)',
+    items: [
+      { name: 'Chicken Finger — No Sauce',      macros: { cal: 100, protein: 10, carbs: 5, fat: 5 } },
+      { name: 'Chicken Finger — Buffalo',       macros: { cal: 110, protein: 10, carbs: 5, fat: 6 } },
+      { name: 'Chicken Finger — Honey Mustard', macros: { cal: 130, protein: 10, carbs: 9, fat: 6 } },
+      { name: 'Chicken Finger — Sweet & Spicy', macros: { cal: 130, protein: 10, carbs: 9, fat: 5 } },
+    ],
+  },
+  {
+    emoji: '🍟', label: 'Sides',
+    items: [
+      { name: 'Crinkle Fries (Regular)',  macros: { cal: 260, protein: 4,  carbs: 35, fat: 12 } },
+      { name: 'Crinkle Fries (Large)',    macros: { cal: 420, protein: 6,  carbs: 57, fat: 19 } },
+      { name: 'Coleslaw',                 macros: { cal: 130, protein: 1,  carbs: 20, fat: 6  } },
+      { name: 'Celery (6pc)',             macros: { cal: 10,  protein: 0,  carbs: 2,  fat: 0  } },
+      { name: 'Texas Toast',              macros: { cal: 160, protein: 4,  carbs: 24, fat: 5  } },
+      { name: 'Zax Sauce (1oz)',          macros: { cal: 150, protein: 0,  carbs: 3,  fat: 16 } },
+      { name: 'Ranch Dressing',           macros: { cal: 190, protein: 1,  carbs: 3,  fat: 20 } },
+    ],
+  },
+]
+
 export default function FastFoodMealBuilder({
   restaurantName,
   menu,
